@@ -1,7 +1,9 @@
+"use client"
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { UserCircle, Menu } from 'lucide-react';
+import { UserCircle, Menu, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +14,37 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { Separator } from './ui/separator';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import type { User } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Check initial session
+    const getInitialUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+    }
+    getInitialUser();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-secondary border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -49,9 +80,20 @@ export default function Navbar() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild><Link href="/login">Login</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/signup">Sign Up</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/admin">My Orders</Link></DropdownMenuItem>
+              {user ? (
+                <>
+                  <DropdownMenuItem asChild><Link href="/admin">My Orders</Link></DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem asChild><Link href="/login">Login</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/signup">Sign Up</Link></DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
@@ -68,9 +110,20 @@ export default function Navbar() {
                     <Link href="#" className="text-lg font-medium">Collections</Link>
                     <Link href="#" className="text-lg font-medium">Contact</Link>
                     <Separator />
-                    <Link href="/login" className="text-lg font-medium">Login</Link>
-                    <Link href="/signup" className="text-lg font-medium">Sign Up</Link>
-                    <Link href="/admin" className="text-lg font-medium">My Orders</Link>
+                     {user ? (
+                      <>
+                        <Link href="/admin" className="text-lg font-medium">My Orders</Link>
+                        <Button variant="ghost" onClick={handleLogout} className="justify-start p-0 h-auto text-lg font-medium">
+                           <LogOut className="mr-2 h-5 w-5" />
+                           Logout
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Link href="/login" className="text-lg font-medium">Login</Link>
+                        <Link href="/signup" className="text-lg font-medium">Sign Up</Link>
+                      </>
+                    )}
                 </div>
             </SheetContent>
           </Sheet>
