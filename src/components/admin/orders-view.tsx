@@ -93,7 +93,7 @@ export default function OrdersView() {
        <Card>
         <CardHeader>
           <CardTitle>Recent Orders</CardTitle>
-        </Header>
+        </CardHeader>
         <CardContent>
           <p>No orders have been placed yet.</p>
         </CardContent>
