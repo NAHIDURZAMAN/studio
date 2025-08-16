@@ -19,19 +19,31 @@ import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 
+const adminEmails = ["nahidurzaman1903@gmail.com", "sakifshahrear@gmail.com"];
+
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    const checkUser = (currentUser: User | null) => {
+        setUser(currentUser);
+        if (currentUser && adminEmails.includes(currentUser.email ?? '')) {
+            setIsAdmin(true);
+        } else {
+            setIsAdmin(false);
+        }
+    };
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
+      checkUser(session?.user ?? null);
     });
 
     // Check initial session
     const getInitialUser = async () => {
         const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
+        checkUser(user);
     }
     getInitialUser();
 
@@ -82,7 +94,7 @@ export default function Navbar() {
               <DropdownMenuSeparator />
               {user ? (
                 <>
-                  <DropdownMenuItem asChild><Link href="/admin">My Orders</Link></DropdownMenuItem>
+                  {isAdmin && <DropdownMenuItem asChild><Link href="/admin">My Orders</Link></DropdownMenuItem>}
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
@@ -112,7 +124,7 @@ export default function Navbar() {
                     <Separator />
                      {user ? (
                       <>
-                        <Link href="/admin" className="text-lg font-medium">My Orders</Link>
+                        {isAdmin && <Link href="/admin" className="text-lg font-medium">My Orders</Link>}
                         <Button variant="ghost" onClick={handleLogout} className="justify-start p-0 h-auto text-lg font-medium">
                            <LogOut className="mr-2 h-5 w-5" />
                            Logout
