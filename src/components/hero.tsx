@@ -15,19 +15,7 @@ export default function Hero() {
             <p className="text-lg text-secondary-foreground font-alegreya">
               From the streets of Mirpur to every corner of Bangladesh, X Style delivers the freshest urban fashion.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-               <div className="bg-card p-4 rounded-lg border flex-1">
-                    <h2 className="font-bold font-headline text-lg flex items-center gap-2"><MapPin className="text-accent"/> Physical Store</h2>
-                    <p className="text-sm text-muted-foreground mt-1">📍 Mirpur 12, Dhaka</p>
-                    <p className="font-bold mt-2 text-primary">চলো না একবার দোকানে!</p>
-               </div>
-               <div className="bg-card p-4 rounded-lg border flex-1">
-                    <h2 className="font-bold font-headline text-lg flex items-center gap-2"><Truck className="text-accent"/> Online Delivery</h2>
-                    <p className="text-sm text-muted-foreground mt-1">🚚 64 Districts, Nationwide</p>
-                    <p className="font-bold mt-2 text-primary">Online ই অর্ডার করো!</p>
-               </div>
-            </div>
-            <div className="text-sm text-muted-foreground">
+             <div className="text-sm text-muted-foreground">
                 <p>Same-day Dhaka delivery | 2-4 days nationwide</p>
             </div>
           </div>

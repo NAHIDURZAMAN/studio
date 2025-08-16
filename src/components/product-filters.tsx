@@ -1,20 +1,26 @@
 "use client"
 
-import { useState } from "react"
 import type { Filters } from "@/types"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Input } from "./ui/input"
 import { Button } from "./ui/button"
-import { FilterX } from "lucide-react"
+import { Search, X } from "lucide-react"
 
 type ProductFiltersProps = {
   onFilterChange: (filters: Filters) => void;
+  onSearchChange: (searchTerm: string) => void;
+  currentFilters: Filters;
+  searchTerm: string;
 };
 
-const categories = ['Drop Shoulder Tees', 'Jerseys', 'Hoodies', 'Basic Collection'];
-const colors = ['Classic Black', 'Crisp White', 'Navy Blue', 'Heather Grey', 'Seasonal Colors'];
+const categories = ['All', 'Drop Shoulder Tees', 'Jerseys', 'Hoodies', 'Basic Collection'];
+const colors = ['All', 'Black', 'White', 'Navy', 'Grey'];
 const priceRanges = [
   { value: 'all', label: 'All Prices' },
   { value: 'under-1000', label: 'Under ৳1000' },
@@ -22,99 +28,83 @@ const priceRanges = [
   { value: 'premium', label: 'Premium (৳2000+)' },
 ];
 
-export default function ProductFilters({ onFilterChange }: ProductFiltersProps) {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedPriceRange, setSelectedPriceRange] = useState('all');
+export default function ProductFilters({ onFilterChange, onSearchChange, currentFilters, searchTerm }: ProductFiltersProps) {
 
   const handleCategoryChange = (category: string) => {
-    const newCategories = selectedCategories.includes(category)
-      ? selectedCategories.filter(c => c !== category)
-      : [...selectedCategories, category];
-    setSelectedCategories(newCategories);
-    onFilterChange({ categories: newCategories, colors: selectedColors, priceRange: selectedPriceRange });
-  };
-
-  const handleColorChange = (color: string) => {
-    const newColors = selectedColors.includes(color)
-      ? selectedColors.filter(c => c !== color)
-      : [...selectedColors, color];
-    setSelectedColors(newColors);
-    onFilterChange({ categories: selectedCategories, colors: newColors, priceRange: selectedPriceRange });
-  };
-
-  const handlePriceChange = (priceRange: string) => {
-    setSelectedPriceRange(priceRange);
-    onFilterChange({ categories: selectedCategories, colors: selectedColors, priceRange });
+    const newCategories = category === 'All' ? [] : [category];
+    onFilterChange({ ...currentFilters, categories: newCategories });
   };
   
-  const clearFilters = () => {
-    setSelectedCategories([]);
-    setSelectedColors([]);
-    setSelectedPriceRange('all');
-    onFilterChange({ categories: [], colors: [], priceRange: 'all' });
+  const handleColorChange = (color: string) => {
+    const newColors = color === 'All' ? [] : [color];
+    onFilterChange({ ...currentFilters, colors: newColors });
   }
 
+  const handlePriceChange = (priceRange: string) => {
+    onFilterChange({ ...currentFilters, priceRange });
+  };
+
+  const clearFilters = () => {
+    onFilterChange({ categories: [], colors: [], priceRange: 'all' });
+    onSearchChange("");
+  }
+  
+  const activeCategory = currentFilters.categories.length > 0 ? currentFilters.categories[0] : 'All';
+
   return (
-    <div className="sticky top-20">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-headline">Filters</h3>
-        <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
-          <FilterX className="h-3 w-3 mr-1"/>
-          Clear
-        </Button>
+    <div className="bg-secondary/50 p-4 rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <div className="md:col-span-4 lg:col-span-5">
+           <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-10"
+              />
+           </div>
+        </div>
+        <div className="md:col-span-8 lg:col-span-7">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Select onValueChange={handleCategoryChange} value={activeCategory}>
+                  <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {categories.map(category => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+              <Select onValueChange={handleColorChange} value={currentFilters.colors[0] || 'All'}>
+                  <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Color" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {colors.map(color => (
+                          <SelectItem key={color} value={color}>{color}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+               <Select onValueChange={handlePriceChange} value={currentFilters.priceRange}>
+                  <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Price" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {priceRanges.map(range => (
+                          <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+               <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-foreground">
+                  <X className="mr-2 h-4 w-4" />
+                  Clear All
+              </Button>
+            </div>
+        </div>
+
       </div>
-      <Accordion type="multiple" defaultValue={['category', 'price', 'color']} className="w-full">
-        <AccordionItem value="category">
-          <AccordionTrigger className="font-semibold">Category</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2">
-              {categories.map(category => (
-                <div key={category} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={category}
-                    checked={selectedCategories.includes(category)}
-                    onCheckedChange={() => handleCategoryChange(category)}
-                  />
-                  <Label htmlFor={category} className="font-normal">{category}</Label>
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="color">
-          <AccordionTrigger className="font-semibold">Color</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2">
-              {colors.map(color => (
-                <div key={color} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={color}
-                    checked={selectedColors.includes(color)}
-                    onCheckedChange={() => handleColorChange(color)}
-                  />
-                  <Label htmlFor={color} className="font-normal">{color}</Label>
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="price">
-          <AccordionTrigger className="font-semibold">Price</AccordionTrigger>
-          <AccordionContent>
-            <RadioGroup value={selectedPriceRange} onValueChange={handlePriceChange}>
-              <div className="space-y-2">
-                {priceRanges.map(range => (
-                  <div key={range.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={range.value} id={range.value} />
-                    <Label htmlFor={range.value} className="font-normal">{range.label}</Label>
-                  </div>
-                ))}
-              </div>
-            </RadioGroup>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
     </div>
   );
 }

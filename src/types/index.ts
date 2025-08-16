@@ -3,7 +3,7 @@ export type Product = {
   name: string;
   category: 'Drop Shoulder Tees' | 'Jerseys' | 'Hoodies' | 'Basic Collection';
   price: number;
-  color: 'Classic Black' | 'Crisp White' | 'Navy Blue' | 'Heather Grey' | 'Seasonal Colors';
+  color: 'Black' | 'White' | 'Navy' | 'Grey';
   image: string;
   stock: number;
   description: string;

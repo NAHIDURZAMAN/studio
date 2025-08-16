@@ -32,7 +32,7 @@ export default function CheckoutSheet({ product, isOpen, onOpenChange }: Checkou
         <SheetHeader className="p-6 pb-2">
           <SheetTitle className="font-headline text-2xl">Confirm Your Order</SheetTitle>
           <SheetDescription>
-            You're just a few steps away. चलो, order করে ফেলো!
+            You're just a few steps away. order করে ফেলো!
           </SheetDescription>
         </SheetHeader>
         <div className="relative h-48 w-full">
