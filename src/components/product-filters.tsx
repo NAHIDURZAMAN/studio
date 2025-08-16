@@ -1,6 +1,7 @@
 "use client"
 
-import type { Filters } from "@/types"
+import type { Filters, Product } from "@/types"
+import * as React from "react";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ type ProductFiltersProps = {
   onSearchChange: (searchTerm: string) => void;
   currentFilters: Filters;
   searchTerm: string;
+  searchSuggestions: Product[];
 };
 
 const categories = ['All', 'Drop Shoulder Tees', 'Jerseys', 'Hoodies', 'Basic Collection'];
@@ -28,7 +30,19 @@ const priceRanges = [
   { value: 'premium', label: 'Premium (৳2000+)' },
 ];
 
-export default function ProductFilters({ onFilterChange, onSearchChange, currentFilters, searchTerm }: ProductFiltersProps) {
+export default function ProductFilters({ onFilterChange, onSearchChange, currentFilters, searchTerm, searchSuggestions }: ProductFiltersProps) {
+  const [showSuggestions, setShowSuggestions] = React.useState(false);
+  const searchRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleCategoryChange = (category: string) => {
     const newCategories = category === 'All' ? [] : [category];
@@ -44,6 +58,16 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
     onFilterChange({ ...currentFilters, priceRange });
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearchChange(e.target.value);
+    setShowSuggestions(true);
+  }
+
+  const handleSuggestionClick = (productName: string) => {
+    onSearchChange(productName);
+    setShowSuggestions(false);
+  }
+
   const clearFilters = () => {
     onFilterChange({ categories: [], colors: [], priceRange: 'all' });
     onSearchChange("");
@@ -55,14 +79,30 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
     <div className="bg-secondary/50 p-4 rounded-lg">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
         <div className="md:col-span-4 lg:col-span-5">
-           <div className="relative">
+           <div className="relative" ref={searchRef}>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                   placeholder="Search products..."
                   value={searchTerm}
-                  onChange={(e) => onSearchChange(e.target.value)}
+                  onChange={handleSearchChange}
+                  onFocus={() => setShowSuggestions(true)}
                   className="pl-10"
               />
+              {showSuggestions && searchTerm && searchSuggestions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-md shadow-lg">
+                  <ul className="py-1">
+                    {searchSuggestions.map(product => (
+                      <li 
+                        key={product.id} 
+                        className="px-4 py-2 text-sm text-foreground hover:bg-accent cursor-pointer"
+                        onClick={() => handleSuggestionClick(product.name)}
+                      >
+                        {product.name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
            </div>
         </div>
         <div className="md:col-span-8 lg:col-span-7">

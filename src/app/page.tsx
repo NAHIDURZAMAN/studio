@@ -42,6 +42,13 @@ export default function Home() {
     setSelectedProduct(product);
   };
 
+  const searchSuggestions = useMemo(() => {
+    if (!searchTerm) return [];
+    return mockProducts.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
+
   const filteredProducts = useMemo(() => {
     return mockProducts.filter(product => {
       const categoryMatch = filters.categories.length === 0 || filters.categories.includes(product.category);
@@ -64,6 +71,7 @@ export default function Home() {
             onSearchChange={setSearchTerm} 
             currentFilters={filters}
             searchTerm={searchTerm}
+            searchSuggestions={searchSuggestions}
           />
 
           <section className="mt-8">
