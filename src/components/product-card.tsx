@@ -30,7 +30,7 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
                     alt={`${product.name} image ${index + 1}`}
                     fill
                     className="object-cover"
-                    data-ai-hint={product.dataAiHint}
+                    data-ai-hint={product.data_ai_hint}
                   />
                 </div>
               </CarouselItem>
@@ -49,9 +49,9 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <p className="text-base md:text-lg font-bold text-primary">৳{product.price.toLocaleString()}</p>
-        <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock} className="h-6 px-1.5 md:h-9 md:px-3">
-            <ShoppingCart className="mr-1 h-3 w-3" />
-            <span className="text-xs md:text-sm">Buy Now</span>
+        <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock} className="h-9 px-3">
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Buy Now
         </Button>
       </CardFooter>
     </Card>
