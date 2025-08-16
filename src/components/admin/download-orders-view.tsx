@@ -49,8 +49,7 @@ export default function DownloadOrdersView() {
         return;
       }
 
-      // We have to cast `any` here because the joined `products` table creates a nested object
-      const typedOrders = orders as any as Order[];
+      const typedOrders = orders as any[];
 
       const csvContent = generateCsv(typedOrders);
       const fileName = `xstyle_${currentStatusKey}_orders_${new Date().toISOString().split('T')[0]}.csv`;
@@ -73,7 +72,7 @@ export default function DownloadOrdersView() {
     }
   };
 
-  const generateCsv = (data: Order[]) => {
+  const generateCsv = (data: (Order & { products: { name: string } | null })[]) => {
     const headers = [
       'OrderID', 'OrderDate', 'Status', 'CustomerName', 'CustomerPhone', 'CustomerSecondaryPhone', 
       'CustomerEmail', 'CustomerAddress', 'ProductName', 'Size', 'Quantity', 'ProductPrice',
@@ -88,7 +87,7 @@ export default function DownloadOrdersView() {
         order.customer_phone,
         order.secondary_phone || '',
         order.customer_email,
-        `"${order.customer_address.replace(/"/g, '""')}"`, // Escape quotes in address
+        `"${(order.customer_address || '').replace(/"/g, '""')}"`, // Escape quotes in address
         order.products?.name || 'N/A',
         order.size,
         order.quantity,
@@ -130,10 +129,10 @@ export default function DownloadOrdersView() {
              {orderStatuses.map(({ status, icon: Icon, label }) => (
                 <Button key={status} onClick={() => handleDownload(status)} disabled={!!loadingStatus}>
                     <Icon className="mr-2 h-4 w-4" />
-                    {loadingStatus === status ? 'Generating...' : `Download ${label}`}
+                    {loadingStatus === status ? 'Generating...' : `${label}`}
                 </Button>
             ))}
-             <Button onClick={() => handleDownload()} disabled={!!loadingStatus} variant="secondary">
+             <Button onClick={() => handleDownload()} disabled={!!loadingStatus} variant="secondary" className="lg:col-span-3">
                 <DownloadCloud className="mr-2 h-4 w-4" />
                 {loadingStatus === 'all' ? 'Generating...' : 'Download All Orders'}
             </Button>

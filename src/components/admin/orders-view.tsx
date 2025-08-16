@@ -53,16 +53,14 @@ export default function OrdersView() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
         (payload) => {
-           if (payload.eventType === 'INSERT') {
+           if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
             fetchOrders();
           } else if (payload.eventType === 'UPDATE') {
             setOrders(currentOrders =>
               currentOrders.map(order =>
-                order.id === payload.new.id ? { ...order, ...payload.new as Order } : order
+                order.id === payload.new.id ? { ...order, ...payload.new as Order, products: order.products } : order
               )
             );
-          } else {
-            fetchOrders();
           }
         }
       )
@@ -77,13 +75,15 @@ export default function OrdersView() {
   const getStatusColorClass = (status: Order['order_status']) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100/50 hover:bg-yellow-100/80';
+        return 'bg-yellow-100/50 hover:bg-yellow-100/80 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50';
       case 'confirmed':
-        return 'bg-blue-100/50 hover:bg-blue-100/80';
+        return 'bg-blue-100/50 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:hover:bg-blue-900/50';
       case 'shipped':
-        return 'bg-green-100/50 hover:bg-green-100/80';
+        return 'bg-green-100/50 hover:bg-green-100/80 dark:bg-green-900/30 dark:hover:bg-green-900/50';
       case 'cancelled':
-        return 'bg-gray-200/50 hover:bg-gray-200/80';
+        return 'bg-gray-200/50 hover:bg-gray-200/80 dark:bg-gray-700/30 dark:hover:bg-gray-700/50';
+       case 'delivered':
+        return 'bg-teal-100/50 hover:bg-teal-100/80 dark:bg-teal-900/30 dark:hover:bg-teal-900/50';
       default:
         return 'hover:bg-muted/50';
     }
