@@ -17,18 +17,20 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import type { Product, CheckoutDetails } from "@/types"
+import type { Product } from "@/types"
 import { useState } from "react"
 import { Separator } from "./ui/separator"
-import { Banknote, Minus, Plus } from "lucide-react"
+import { Banknote, CreditCard, Minus, Plus, Smartphone, Truck } from "lucide-react"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion"
+import Image from "next/image"
 
 const checkoutSchema = z.object({
   name: z.string().min(2, "Name is required."),
   phone: z.string().regex(/^(?:\+88|88)?(01[3-9]\d{8})$/, "Invalid Bangladeshi phone number."),
-  email: z.string().email("Invalid email address.").optional().or(z.literal('')),
+  email: z.string().email("A valid email address is required."),
   address: z.string().min(10, "Full address is required."),
-  deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }),
   paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'trust', 'brac'], { required_error: "Please select a payment method." }),
+  deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }).optional(),
   transactionId: z.string().optional(),
 }).refine(data => {
   if (data.paymentMethod !== 'cod' && (!data.transactionId || data.transactionId.trim().length < 5)) {
@@ -38,7 +40,16 @@ const checkoutSchema = z.object({
 }, {
   message: "A valid Transaction ID is required for this payment method.",
   path: ["transactionId"],
+}).refine(data => {
+    if (data.paymentMethod === 'cod' && !data.deliveryLocation) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Please select a delivery location for Cash on Delivery.",
+    path: ["deliveryLocation"],
 });
+
 
 type CheckoutFormProps = {
   product: Product;
@@ -48,6 +59,7 @@ type CheckoutFormProps = {
 export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
+  const [activeAccordion, setActiveAccordion] = useState<string | undefined>(undefined);
   
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -66,6 +78,18 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
   const deliveryCharge = deliveryLocation === 'dhaka' ? 70 : deliveryLocation === 'outside' ? 120 : 0;
   const subtotal = product.price * quantity;
   const total = subtotal + (paymentMethod === 'cod' ? deliveryCharge : 0);
+  
+  const handlePaymentMethodChange = (value: string) => {
+    form.setValue("paymentMethod", value as any);
+    if(value === 'cod'){
+        setActiveAccordion('cod');
+    } else if (['bkash', 'nagad'].includes(value)) {
+        setActiveAccordion('mobile');
+    } else if (['trust', 'brac'].includes(value)) {
+        setActiveAccordion('card');
+    }
+  }
+
 
   function onSubmit(values: z.infer<typeof checkoutSchema>) {
     console.log({ ...values, quantity, total });
@@ -122,7 +146,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email (Optional)</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="you@example.com" {...field} />
               </FormControl>
@@ -144,104 +168,137 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="paymentMethod"
-          render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel>Payment Method</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="grid grid-cols-2 gap-4"
-                >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="cod" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Cash on Delivery</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="bkash" />
-                    </FormControl>
-                    <FormLabel className="font-normal">bKash</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="nagad" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Nagad</FormLabel>
-                  </FormItem>
-                   <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="trust" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Trust Bank</FormLabel>
-                  </FormItem>
-                   <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="brac" />
-                    </FormControl>
-                    <FormLabel className="font-normal">BRAC Bank</FormLabel>
-                  </FormItem>
+        <FormItem>
+            <FormLabel>Payment Method</FormLabel>
+            <Accordion type="single" collapsible value={activeAccordion} onValueChange={setActiveAccordion}>
+                <RadioGroup onValueChange={handlePaymentMethodChange} value={paymentMethod} className="grid grid-cols-1 gap-4">
+                    
+                    <AccordionItem value="cod" className="border rounded-md px-4">
+                        <AccordionTrigger className="hover:no-underline">
+                           <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                <RadioGroupItem value="cod" id="cod" />
+                                </FormControl>
+                                <FormLabel htmlFor="cod" className="font-normal flex items-center gap-2"><Truck className="w-5 h-5" /> Cash on Delivery</FormLabel>
+                           </FormItem>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                           <FormField
+                                control={form.control}
+                                name="deliveryLocation"
+                                render={({ field }) => (
+                                <FormItem className="pt-4">
+                                    <FormLabel>Delivery Location</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Select where to deliver" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="dhaka">Inside Dhaka</SelectItem>
+                                        <SelectItem value="outside">Outside Dhaka</SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="mobile" className="border rounded-md px-4">
+                         <AccordionTrigger className="hover:no-underline">
+                            <span className="flex items-center gap-2"><Smartphone className="w-5 h-5"/> Mobile Banking</span>
+                         </AccordionTrigger>
+                         <AccordionContent className="pt-4 space-y-4">
+                            <div className="bg-secondary p-4 rounded-md">
+                                <p className="text-sm text-secondary-foreground">Please send ৳{subtotal.toLocaleString()} to one of the following numbers and enter the Transaction ID below.</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
+                                    <FormControl>
+                                        <RadioGroupItem value="bkash" id="bkash" />
+                                    </FormControl>
+                                    <FormLabel htmlFor="bkash" className="font-normal w-full">
+                                        <Image src="/assets/bkash.svg" alt="bKash" width={60} height={20}/>
+                                    </FormLabel>
+                                </FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
+                                    <FormControl>
+                                        <RadioGroupItem value="nagad" id="nagad" />
+                                    </FormControl>
+                                    <FormLabel htmlFor="nagad" className="font-normal w-full">
+                                        <Image src="/assets/nagad.svg" alt="Nagad" width={80} height={20}/>
+                                    </FormLabel>
+                                </FormItem>
+                            </div>
+                             {['bkash', 'nagad'].includes(paymentMethod) && (
+                                <FormField
+                                    control={form.control}
+                                    name="transactionId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Transaction ID</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter your TrxID here" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                         </AccordionContent>
+                    </AccordionItem>
+
+                     <AccordionItem value="card" className="border rounded-md px-4">
+                         <AccordionTrigger className="hover:no-underline">
+                           <span className="flex items-center gap-2"><CreditCard className="w-5 h-5"/> Card / Bank Transfer</span>
+                         </AccordionTrigger>
+                         <AccordionContent className="pt-4 space-y-4">
+                             <div className="bg-secondary p-4 rounded-md">
+                                <p className="text-sm text-secondary-foreground">Please send ৳{subtotal.toLocaleString()} to one of the following accounts and enter the Transaction ID below.</p>
+                            </div>
+                           <div className="grid grid-cols-2 gap-4">
+                                <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
+                                    <FormControl>
+                                        <RadioGroupItem value="trust" id="trust" />
+                                    </FormControl>
+                                    <FormLabel htmlFor="trust" className="font-normal w-full">
+                                       <Image src="/assets/trust.svg" alt="Trust Bank" width={80} height={20}/>
+                                    </FormLabel>
+                                </FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
+                                    <FormControl>
+                                        <RadioGroupItem value="brac" id="brac" />
+                                    </FormControl>
+                                    <FormLabel htmlFor="brac" className="font-normal w-full">
+                                        <Image src="/assets/brac.svg" alt="BRAC Bank" width={80} height={20}/>
+                                    </FormLabel>
+                                </FormItem>
+                            </div>
+                            {['trust', 'brac'].includes(paymentMethod) && (
+                                <FormField
+                                    control={form.control}
+                                    name="transactionId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Transaction ID</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter your TrxID here" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                         </AccordionContent>
+                    </AccordionItem>
                 </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {paymentMethod === 'cod' && (
-            <FormField
-                control={form.control}
-                name="deliveryLocation"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Delivery Location</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                        <SelectTrigger>
-                        <SelectValue placeholder="Select where to deliver" />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="dhaka">Inside Dhaka</SelectItem>
-                        <SelectItem value="outside">Outside Dhaka</SelectItem>
-                    </SelectContent>
-                    </Select>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-        )}
-
-        {paymentMethod && paymentMethod !== 'cod' && (
-            <div className="bg-secondary p-4 rounded-md">
-                <p className="font-semibold text-secondary-foreground mb-2">Payment Instructions:</p>
-                <p className="text-sm text-secondary-foreground">Please send ৳{subtotal.toLocaleString()} to one of the following numbers and enter the Transaction ID below.</p>
-                <ul className="text-sm list-disc pl-5 mt-2 font-mono text-muted-foreground">
-                    <li>bKash: 01677343504</li>
-                    <li>Nagad: 01521753739</li>
-                    <li>Trust Bank: 4181171800860910</li>
-                    <li>BRAC Bank: 4777920800299481</li>
-                </ul>
-                <FormField
-                    control={form.control}
-                    name="transactionId"
-                    render={({ field }) => (
-                        <FormItem className="mt-4">
-                        <FormLabel>Transaction ID</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Enter your TrxID here" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-            </div>
-        )}
+            </Accordion>
+            <FormMessage>{form.formState.errors.paymentMethod?.message}</FormMessage>
+        </FormItem>
+        
 
         <div className="bg-muted/50 p-4 rounded-lg space-y-2">
             <div className="flex justify-between text-sm">

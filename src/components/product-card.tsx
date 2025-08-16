@@ -3,7 +3,8 @@ import type { Product } from "@/types"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "./ui/badge"
-import { ShoppingCart, Zap } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "./ui/carousel"
 
 type ProductCardProps = {
   product: Product;
@@ -17,17 +18,31 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <CardHeader className="p-0 relative">
-        <div className="aspect-[4/5] w-full relative">
-           <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover"
-            data-ai-hint={product.dataAiHint}
-          />
-        </div>
+        <Carousel className="w-full">
+          <CarouselContent>
+            {product.images.map((image, index) => (
+              <CarouselItem key={index}>
+                <div className="aspect-[4/5] w-full relative">
+                  <Image
+                    src={image}
+                    alt={`${product.name} image ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={product.dataAiHint}
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {product.images.length > 1 && (
+            <>
+              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
+              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
+            </>
+          )}
+        </Carousel>
         {(isLimitedStock || isOutOfStock) && (
-             <Badge variant={isOutOfStock ? "destructive" : "secondary"} className="absolute top-3 right-3">
+             <Badge variant={isOutOfStock ? "destructive" : "secondary"} className="absolute top-3 right-3 z-10">
                 {isOutOfStock ? "Out of Stock" : `Only ${product.stock} left!`}
              </Badge>
         )}

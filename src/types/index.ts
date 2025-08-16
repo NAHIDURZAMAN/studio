@@ -4,7 +4,7 @@ export type Product = {
   category: 'Drop Shoulder Tees' | 'Jerseys' | 'Hoodies' | 'Basic Collection';
   price: number;
   color: 'Black' | 'White' | 'Navy' | 'Grey';
-  image: string;
+  images: string[];
   stock: number;
   description: string;
   dataAiHint?: string;
@@ -19,7 +19,7 @@ export type Filters = {
 export type CheckoutDetails = {
   name: string;
   phone: string;
-  email?: string;
+  email: string;
   address: string;
   paymentMethod: 'cod' | 'bkash' | 'nagad' | 'trust' | 'brac';
   deliveryLocation: 'dhaka' | 'outside';
