@@ -43,14 +43,14 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
              </Badge>
         )}
       </CardHeader>
-      <CardContent className="p-4 flex-grow">
-        <CardTitle className="font-headline text-lg mb-1">{product.name}</CardTitle>
-        <p className="font-alegreya text-sm text-muted-foreground">{product.category}</p>
+      <CardContent className="p-3 md:p-4 flex-grow">
+        <CardTitle className="font-headline text-base md:text-lg mb-1">{product.name}</CardTitle>
+        <p className="font-alegreya text-xs md:text-sm text-muted-foreground">{product.category}</p>
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex justify-between items-center">
-        <p className="text-base md:text-lg font-bold text-primary">৳{product.price.toLocaleString()}</p>
-        <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock} className="h-9 px-3">
-            <ShoppingCart className="mr-2 h-4 w-4" />
+      <CardFooter className="p-3 md:p-4 pt-0 flex justify-between items-center">
+        <p className="text-lg md:text-xl font-bold text-primary">৳{product.price.toLocaleString()}</p>
+        <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock} className="h-9 px-3 text-xs md:h-10 md:px-4 md:text-sm">
+            <ShoppingCart className="mr-1 md:mr-2 h-4 w-4" />
             Buy Now
         </Button>
       </CardFooter>
