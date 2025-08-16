@@ -47,16 +47,22 @@ export default function OrdersView() {
     fetchOrders()
     
     const channel = supabase
-      .channel('orders-changes')
+      .channel('orders-realtime-channel')
       .on<Order>(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders' },
+        { event: '*', schema: 'public', table: 'orders' },
         (payload) => {
-          setOrders(currentOrders => 
-            currentOrders.map(order => 
-              order.id === payload.new.id ? {...order, ...payload.new} : order
-            )
-          )
+          // When an update happens, find the order and update it in the local state.
+           if (payload.eventType === 'UPDATE') {
+            setOrders(currentOrders =>
+              currentOrders.map(order =>
+                order.id === payload.new.id ? { ...order, ...payload.new } : order
+              )
+            );
+          } else {
+            // For new inserts or deletions, a full refetch is safer.
+            fetchOrders();
+          }
         }
       )
       .subscribe();
@@ -87,7 +93,7 @@ export default function OrdersView() {
        <Card>
         <CardHeader>
           <CardTitle>Recent Orders</CardTitle>
-        </CardHeader>
+        </Header>
         <CardContent>
           <p>No orders have been placed yet.</p>
         </CardContent>
