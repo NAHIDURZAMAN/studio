@@ -6,20 +6,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from '@/lib/supabase';
 import type { Order } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { DownloadCloud } from 'lucide-react';
+import { DownloadCloud, Package, PackageCheck, Send, Ban, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
+const orderStatuses: { status: Order['order_status']; icon: React.ElementType; label: string }[] = [
+    { status: 'pending', icon: Package, label: 'Pending Orders' },
+    { status: 'confirmed', icon: CheckCircle, label: 'Confirmed Orders' },
+    { status: 'shipped', icon: Send, label: 'Shipped Orders' },
+    { status: 'delivered', icon: PackageCheck, label: 'Delivered Orders' },
+    { status: 'cancelled', icon: Ban, label: 'Cancelled Orders' },
+];
+
 export default function DownloadOrdersView() {
-  const [loading, setLoading] = React.useState(false);
+  const [loadingStatus, setLoadingStatus] = React.useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleDownload = async () => {
-    setLoading(true);
+  const handleDownload = async (status?: Order['order_status']) => {
+    const currentStatusKey = status || 'all';
+    setLoadingStatus(currentStatusKey);
     try {
-      const { data: orders, error } = await supabase
+      let query = supabase
         .from('orders')
         .select(`*, products(name)`)
         .order('created_at', { ascending: false });
+
+      if (status) {
+        query = query.eq('order_status', status);
+      }
+
+      const { data: orders, error } = await query;
 
       if (error) {
         throw new Error(`Failed to fetch orders: ${error.message}`);
@@ -29,7 +44,7 @@ export default function DownloadOrdersView() {
         toast({
             variant: "default",
             title: "No Orders Found",
-            description: "There are no orders to download.",
+            description: `There are no "${status || 'any'}" orders to download.`,
         });
         return;
       }
@@ -38,11 +53,12 @@ export default function DownloadOrdersView() {
       const typedOrders = orders as any as Order[];
 
       const csvContent = generateCsv(typedOrders);
-      downloadCsv(csvContent);
+      const fileName = `xstyle_${currentStatusKey}_orders_${new Date().toISOString().split('T')[0]}.csv`;
+      downloadCsv(csvContent, fileName);
 
       toast({
         title: "Download Started",
-        description: "Your order history is being downloaded as a CSV file.",
+        description: `Your ${currentStatusKey} order history is downloading.`,
       });
 
     } catch (error: any) {
@@ -53,7 +69,7 @@ export default function DownloadOrdersView() {
         description: error.message || "An unexpected error occurred.",
       });
     } finally {
-      setLoading(false);
+      setLoadingStatus(null);
     }
   };
 
@@ -87,13 +103,13 @@ export default function DownloadOrdersView() {
     return [headers.join(','), ...rows].join('\n');
   };
 
-  const downloadCsv = (csvContent: string) => {
+  const downloadCsv = (csvContent: string, fileName: string) => {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `xstyle_order_history_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', fileName);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -106,14 +122,22 @@ export default function DownloadOrdersView() {
       <CardHeader>
         <CardTitle>Download Order History</CardTitle>
         <CardDescription>
-          Download a complete history of all orders as a CSV file. This can be opened in any spreadsheet software like Excel or Google Sheets.
+          Download a complete history of all orders, or download orders filtered by their current status.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Button onClick={handleDownload} disabled={loading}>
-            <DownloadCloud className="mr-2 h-4 w-4" />
-            {loading ? 'Generating...' : 'Download All Orders (CSV)'}
-        </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+             {orderStatuses.map(({ status, icon: Icon, label }) => (
+                <Button key={status} onClick={() => handleDownload(status)} disabled={!!loadingStatus}>
+                    <Icon className="mr-2 h-4 w-4" />
+                    {loadingStatus === status ? 'Generating...' : `Download ${label}`}
+                </Button>
+            ))}
+             <Button onClick={() => handleDownload()} disabled={!!loadingStatus} variant="secondary">
+                <DownloadCloud className="mr-2 h-4 w-4" />
+                {loadingStatus === 'all' ? 'Generating...' : 'Download All Orders'}
+            </Button>
+        </div>
       </CardContent>
     </Card>
   );
