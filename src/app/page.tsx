@@ -33,7 +33,7 @@ export default function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from('products').select('*');
+      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
       if (error) {
         console.error('Error fetching products:', error);
       } else {
@@ -41,7 +41,23 @@ export default function Home() {
       }
       setLoading(false);
     };
+    
     fetchProducts();
+
+    const channel = supabase
+      .channel('products-changes')
+      .on<Product>(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        (payload) => {
+          fetchProducts(); // Refetch all products on any change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleBuyNow = (product: Product) => {
