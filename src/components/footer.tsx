@@ -14,6 +14,11 @@ export default function Footer() {
             <p className="text-sm font-alegreya">
               Be Your Outfit. We ship style to every corner of Bangladesh.
             </p>
+             <div className="mt-4">
+                <Button variant="ghost" size="sm" asChild>
+                    <Link href="/admin">Admin Dashboard</Link>
+                </Button>
+            </div>
           </div>
 
           <div className="md:col-span-5">

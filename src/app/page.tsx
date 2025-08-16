@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import type { Product, Filters } from "@/types"
 import Navbar from "@/components/navbar"
 import ProductFilters from "@/components/product-filters"
@@ -9,17 +9,8 @@ import ProductCard from "@/components/product-card"
 import CheckoutSheet from "@/components/checkout-sheet"
 import Footer from "@/components/footer"
 import { Separator } from "@/components/ui/separator"
-
-const mockProducts: Product[] = [
-  { id: 1, name: 'Urban Explorer Tee', category: 'Drop Shoulder Tees', price: 950, color: 'Black', images: ['https://placehold.co/400x500.png', 'https://placehold.co/400x500.png', 'https://placehold.co/400x500.png'], stock: 15, description: "A classic black drop shoulder tee, perfect for the urban explorer. Made with 100% premium cotton.", dataAiHint: "black t-shirt" },
-  { id: 2, name: 'City Limitless Jersey', category: 'Jerseys', price: 1800, color: 'White', images: ['https://placehold.co/400x500.png'], stock: 8, description: "Breathe easy with this stylish white jersey. Its lightweight fabric is ideal for Dhaka's heat.", dataAiHint: "white jersey" },
-  { id: 3, name: 'Mirpur Midnight Hoodie', category: 'Hoodies', price: 2500, color: 'Navy', images: ['https://placehold.co/400x500.png', 'https://placehold.co/400x500.png'], stock: 12, description: "Stay cozy during late-night hangouts with this deep navy hoodie. A true Mirpur original.", dataAiHint: "navy hoodie" },
-  { id: 4, name: 'Dhaka Basic Tee', category: 'Basic Collection', price: 800, color: 'White', images: ['https://placehold.co/400x500.png'], stock: 30, description: "The essential white tee. A must-have in every wardrobe, combining comfort and style.", dataAiHint: "white t-shirt" },
-  { id: 5, name: 'Stealth Mode Tee', category: 'Drop Shoulder Tees', price: 1100, color: 'Black', images: ['https://placehold.co/400x500.png'], stock: 5, description: "A premium black drop shoulder tee with a subtle, reflective logo. Limited stock available.", dataAiHint: "black t-shirt" },
-  { id: 6, name: 'Gameday Champion Jersey', category: 'Jerseys', price: 1900, color: 'Grey', images: ['https://placehold.co/400x500.png', 'https://placehold.co/400x500.png'], stock: 20, description: "Rep your style with our Gameday Champion jersey, in a versatile heather grey.", dataAiHint: "grey jersey" },
-  { id: 7, name: 'Concrete Jungle Hoodie', category: 'Hoodies', price: 2200, color: 'Black', images: ['https://placehold.co/400x500.png'], stock: 0, description: "Our most popular black hoodie. Currently out of stock, but sign up for restock alerts!", dataAiHint: "black hoodie" },
-  { id: 8, name: 'Simple & Solid Tee', category: 'Basic Collection', price: 850, color: 'Grey', images: ['https://placehold.co/400x500.png'], stock: 25, description: "A high-quality basic tee in a unique seasonal color. Versatile and durable.", dataAiHint: "grey t-shirt" },
-];
+import { supabase } from "@/lib/supabase"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const priceRanges = {
   'under-1000': (price: number) => price < 1000,
@@ -29,6 +20,8 @@ const priceRanges = {
 };
 
 export default function Home() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>({
     categories: [],
     colors: [],
@@ -37,26 +30,40 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase.from('products').select('*');
+      if (error) {
+        console.error('Error fetching products:', error);
+      } else {
+        setProducts(data as Product[]);
+      }
+      setLoading(false);
+    };
+    fetchProducts();
+  }, []);
+
   const handleBuyNow = (product: Product) => {
     setSelectedProduct(product);
   };
 
   const searchSuggestions = useMemo(() => {
     if (!searchTerm) return [];
-    return mockProducts.filter(product =>
+    return products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
+  }, [searchTerm, products]);
 
   const filteredProducts = useMemo(() => {
-    return mockProducts.filter(product => {
+    return products.filter(product => {
       const categoryMatch = filters.categories.length === 0 || filters.categories.includes(product.category);
       const colorMatch = filters.colors.length === 0 || filters.colors.includes(product.color);
       const priceMatch = priceRanges[filters.priceRange as keyof typeof priceRanges](product.price);
       const searchMatch = searchTerm === "" || product.name.toLowerCase().includes(searchTerm.toLowerCase());
       return categoryMatch && colorMatch && priceMatch && searchMatch;
     });
-  }, [filters, searchTerm]);
+  }, [filters, searchTerm, products]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -81,15 +88,25 @@ export default function Home() {
           />
 
           <section className="mt-8">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} onBuyNow={handleBuyNow} />
-              ))}
-            </div>
-            {filteredProducts.length === 0 && (
-               <div className="col-span-full text-center py-16">
-                  <p className="text-muted-foreground text-lg">No products match your filters. Try different options!</p>
-               </div>
+            {loading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <CardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                  {filteredProducts.map(product => (
+                    <ProductCard key={product.id} product={product} onBuyNow={handleBuyNow} />
+                  ))}
+                </div>
+                {filteredProducts.length === 0 && (
+                   <div className="col-span-full text-center py-16">
+                      <p className="text-muted-foreground text-lg">No products match your filters. Try different options!</p>
+                   </div>
+                )}
+              </>
             )}
           </section>
         </div>
@@ -110,4 +127,16 @@ export default function Home() {
       />
     </div>
   );
+}
+
+function CardSkeleton() {
+  return (
+    <div className="flex flex-col space-y-3">
+      <Skeleton className="h-[250px] w-full rounded-lg" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-[200px]" />
+        <Skeleton className="h-4 w-[150px]" />
+      </div>
+    </div>
+  )
 }

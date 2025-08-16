@@ -23,11 +23,12 @@ import { Separator } from "./ui/separator"
 import { Banknote, CreditCard, Minus, Plus, Smartphone, Truck } from "lucide-react"
 import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
+import { supabase } from "@/lib/supabase"
 
 const checkoutSchema = z.object({
   name: z.string().min(2, "Name is required."),
   phone: z.string().regex(/^(?:\+88|88)?(01[3-9]\d{8})$/, "Invalid Bangladeshi phone number."),
-  email: z.string().email("A valid email address is required."),
+  email: z.string().email("A valid email address is required.").optional().or(z.literal('')),
   address: z.string().min(10, "Full address is required."),
   paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'trust', 'brac'], { required_error: "Please select a payment method." }),
   deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }).optional(),
@@ -80,7 +81,6 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
   
   const handlePaymentMethodChange = (value: string) => {
     form.setValue("paymentMethod", value as any, { shouldValidate: true });
-    // Reset dependant fields
     if (value === 'cod') {
         form.setValue("transactionId", "");
     } else {
@@ -99,13 +99,38 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
   }
 
 
-  function onSubmit(values: z.infer<typeof checkoutSchema>) {
-    console.log({ ...values, quantity, total });
-    toast({
-      title: "🎉 Order Placed!",
-      description: "Your X STYLE order is confirmed. We'll be in touch shortly!",
-    });
-    onSuccess();
+  async function onSubmit(values: z.infer<typeof checkoutSchema>) {
+    const orderData = {
+        product_id: product.id,
+        quantity,
+        total_price: total,
+        delivery_charge: paymentMethod === 'cod' ? deliveryCharge : 0,
+        customer_name: values.name,
+        customer_phone: values.phone,
+        customer_email: values.email,
+        customer_address: values.address,
+        payment_method: values.paymentMethod,
+        delivery_location: values.deliveryLocation,
+        transaction_id: values.transactionId,
+        order_status: 'pending',
+    };
+
+    const { error } = await supabase.from('orders').insert([orderData]);
+
+    if (error) {
+        console.error('Error creating order:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Order Failed',
+            description: 'There was a problem placing your order. Please try again.',
+        });
+    } else {
+        toast({
+          title: "🎉 Order Placed!",
+          description: "Your X STYLE order is confirmed. We'll be in touch shortly!",
+        });
+        onSuccess();
+    }
   }
 
   return (
@@ -154,7 +179,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Email (Optional)</FormLabel>
               <FormControl>
                 <Input placeholder="you@example.com" {...field} />
               </FormControl>
@@ -323,5 +348,3 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
     </Form>
   )
 }
-
-    
