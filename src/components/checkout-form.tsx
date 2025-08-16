@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,7 +38,7 @@ const checkoutSchema = z.object({
   paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'trust', 'brac'], { required_error: "Please select a payment method." }),
   deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }).optional(),
   transactionId: z.string().optional(),
-  codConfirmation: z.boolean().optional(),
+  paymentConfirmation: z.boolean(),
 }).refine(data => {
   if (data.paymentMethod !== 'cod' && (!data.transactionId || data.transactionId.trim().length < 5)) {
     return false;
@@ -55,13 +56,13 @@ const checkoutSchema = z.object({
     message: "Please select a delivery location for Cash on Delivery.",
     path: ["deliveryLocation"],
 }).refine(data => {
-    if (data.paymentMethod === 'cod' && !data.codConfirmation) {
+    if (!data.paymentConfirmation) {
         return false;
     }
     return true;
 }, {
-    message: "Please confirm you agree to pay on delivery.",
-    path: ["codConfirmation"],
+    message: "Please confirm you agree to the payment terms.",
+    path: ["paymentConfirmation"],
 });
 
 
@@ -81,9 +82,10 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
       phone: "",
       email: "",
       address: "",
+      paymentMethod: 'cod',
       transactionId: "",
       secondary_phone: "",
-      codConfirmation: false,
+      paymentConfirmation: false,
     },
   });
 
@@ -96,11 +98,11 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
   
   const handlePaymentMethodChange = (value: string) => {
     form.setValue("paymentMethod", value as any, { shouldValidate: true });
+    form.setValue("paymentConfirmation", false); // Reset confirmation on change
     if (value === 'cod') {
         form.setValue("transactionId", "");
     } else {
         form.setValue("deliveryLocation", undefined);
-        form.setValue("codConfirmation", false);
     }
   }
 
@@ -301,19 +303,21 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                     <SelectItem value="outside">Outside Dhaka</SelectItem>
                                 </SelectContent>
                                 </Select>
+                                {deliveryLocation === 'dhaka' && <FormDescription className="pt-2 text-primary">You will receive the order within 2-3 days and a confirmation email will be sent.</FormDescription>}
+                                {deliveryLocation === 'outside' && <FormDescription className="pt-2 text-primary">Delivery outside Dhaka will take 3-4 days and a confirmation email will be sent.</FormDescription>}
                                 <FormMessage />
                             </FormItem>
                             )}
                         />
-                        <FormField
+                         <FormField
                             control={form.control}
-                            name="codConfirmation"
-                            render={({ field: codField }) => (
+                            name="paymentConfirmation"
+                            render={({ field: confirmField }) => (
                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
                                 <FormControl>
                                     <Checkbox
-                                    checked={codField.value}
-                                    onCheckedChange={codField.onChange}
+                                    checked={confirmField.value}
+                                    onCheckedChange={confirmField.onChange}
                                     />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
@@ -362,6 +366,26 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                         </FormItem>
                                     )}
                                 />
+                             <FormField
+                                control={form.control}
+                                name="paymentConfirmation"
+                                render={({ field: confirmField }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
+                                    <FormControl>
+                                        <Checkbox
+                                        checked={confirmField.value}
+                                        onCheckedChange={confirmField.onChange}
+                                        />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel>
+                                        I confirm that I have sent the payment and the Transaction ID is correct.
+                                        </FormLabel>
+                                        <FormMessage />
+                                    </div>
+                                    </FormItem>
+                                )}
+                            />
                         </RadioGroup>
                     </TabsContent>
                     <TabsContent value="card" className="mt-4">
@@ -397,6 +421,26 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                         <Input placeholder="Enter your TrxID here" {...trxField} />
                                     </FormControl>
                                     <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="paymentConfirmation"
+                                render={({ field: confirmField }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
+                                    <FormControl>
+                                        <Checkbox
+                                        checked={confirmField.value}
+                                        onCheckedChange={confirmField.onChange}
+                                        />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel>
+                                         I confirm that I have sent the payment and the Transaction ID is correct.
+                                        </FormLabel>
+                                        <FormMessage />
+                                    </div>
                                     </FormItem>
                                 )}
                             />
