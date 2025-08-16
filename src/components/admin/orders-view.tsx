@@ -16,6 +16,7 @@ import { Badge } from "../ui/badge"
 import { format } from 'date-fns'
 import OrderDetailsDialog from "./order-details-dialog"
 import { Skeleton } from "../ui/skeleton"
+import { cn } from "@/lib/utils"
 
 export default function OrdersView() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -52,15 +53,15 @@ export default function OrdersView() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
         (payload) => {
-          // When an update happens, find the order and update it in the local state.
-           if (payload.eventType === 'UPDATE') {
+           if (payload.eventType === 'INSERT') {
+            fetchOrders();
+          } else if (payload.eventType === 'UPDATE') {
             setOrders(currentOrders =>
               currentOrders.map(order =>
-                order.id === payload.new.id ? { ...order, ...payload.new } : order
+                order.id === payload.new.id ? { ...order, ...payload.new as Order } : order
               )
             );
           } else {
-            // For new inserts or deletions, a full refetch is safer.
             fetchOrders();
           }
         }
@@ -72,6 +73,21 @@ export default function OrdersView() {
     };
 
   }, [fetchOrders])
+
+  const getStatusColorClass = (status: Order['order_status']) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100/50 hover:bg-yellow-100/80';
+      case 'confirmed':
+        return 'bg-blue-100/50 hover:bg-blue-100/80';
+      case 'shipped':
+        return 'bg-green-100/50 hover:bg-green-100/80';
+      case 'cancelled':
+        return 'bg-gray-200/50 hover:bg-gray-200/80';
+      default:
+        return 'hover:bg-muted/50';
+    }
+  }
 
   if (loading) {
     return (
@@ -122,7 +138,11 @@ export default function OrdersView() {
             </TableHeader>
             <TableBody>
               {orders.map((order) => (
-                <TableRow key={order.id} onClick={() => setSelectedOrder(order)} className="cursor-pointer">
+                <TableRow 
+                  key={order.id} 
+                  onClick={() => setSelectedOrder(order)} 
+                  className={cn("cursor-pointer", getStatusColorClass(order.order_status))}
+                >
                   <TableCell className="font-mono">{order.order_id || 'N/A'}</TableCell>
                   <TableCell>{format(new Date(order.created_at), 'PPp')}</TableCell>
                   <TableCell>
