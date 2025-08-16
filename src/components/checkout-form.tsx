@@ -21,8 +21,8 @@ import type { Product } from "@/types"
 import { useState } from "react"
 import { Separator } from "./ui/separator"
 import { Banknote, CreditCard, Minus, Plus, Smartphone, Truck } from "lucide-react"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion"
 import Image from "next/image"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 
 const checkoutSchema = z.object({
   name: z.string().min(2, "Name is required."),
@@ -59,7 +59,6 @@ type CheckoutFormProps = {
 export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
-  const [activeAccordion, setActiveAccordion] = useState<string | undefined>(undefined);
   
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -80,13 +79,22 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
   const total = subtotal + (paymentMethod === 'cod' ? deliveryCharge : 0);
   
   const handlePaymentMethodChange = (value: string) => {
-    form.setValue("paymentMethod", value as any);
-    if(value === 'cod'){
-        setActiveAccordion('cod');
-    } else if (['bkash', 'nagad'].includes(value)) {
-        setActiveAccordion('mobile');
-    } else if (['trust', 'brac'].includes(value)) {
-        setActiveAccordion('card');
+    form.setValue("paymentMethod", value as any, { shouldValidate: true });
+    // Reset dependant fields
+    if (value === 'cod') {
+        form.setValue("transactionId", "");
+    } else {
+        form.setValue("deliveryLocation", undefined);
+    }
+  }
+
+  const handleTabChange = (tab: string) => {
+    if (tab === 'cod') {
+        handlePaymentMethodChange('cod');
+    } else if (tab === 'mobile') {
+        handlePaymentMethodChange('bkash');
+    } else if (tab === 'card') {
+        handlePaymentMethodChange('trust');
     }
   }
 
@@ -168,50 +176,46 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
           )}
         />
         
-        <FormItem>
-            <FormLabel>Payment Method</FormLabel>
-            <Accordion type="single" collapsible value={activeAccordion} onValueChange={setActiveAccordion}>
-                <RadioGroup onValueChange={handlePaymentMethodChange} value={paymentMethod} className="grid grid-cols-1 gap-4">
-                    
-                    <AccordionItem value="cod" className="border rounded-md px-4">
-                        <AccordionTrigger className="hover:no-underline">
-                           <FormItem className="flex items-center space-x-3 space-y-0">
+        <FormField
+          control={form.control}
+          name="paymentMethod"
+          render={({ field }) => (
+            <FormItem>
+                <FormLabel>Payment Method</FormLabel>
+                 <Tabs defaultValue="cod" className="w-full" onValueChange={handleTabChange}>
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="cod"><Truck className="w-4 h-4 mr-2" />COD</TabsTrigger>
+                        <TabsTrigger value="mobile"><Smartphone className="w-4 h-4 mr-2"/>Mobile</TabsTrigger>
+                        <TabsTrigger value="card"><CreditCard className="w-4 h-4 mr-2"/>Card/Bank</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="cod" className="mt-4">
+                        <div className="bg-secondary p-4 rounded-md">
+                           <p className="text-sm text-secondary-foreground">Pay with cash upon delivery.</p>
+                        </div>
+                        <FormField
+                            control={form.control}
+                            name="deliveryLocation"
+                            render={({ field: deliveryField }) => (
+                            <FormItem className="pt-4">
+                                <FormLabel>Delivery Location</FormLabel>
+                                <Select onValueChange={deliveryField.onChange} defaultValue={deliveryField.value}>
                                 <FormControl>
-                                <RadioGroupItem value="cod" id="cod" />
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Select where to deliver" />
+                                    </SelectTrigger>
                                 </FormControl>
-                                <FormLabel htmlFor="cod" className="font-normal flex items-center gap-2"><Truck className="w-5 h-5" /> Cash on Delivery</FormLabel>
-                           </FormItem>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                           <FormField
-                                control={form.control}
-                                name="deliveryLocation"
-                                render={({ field }) => (
-                                <FormItem className="pt-4">
-                                    <FormLabel>Delivery Location</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Select where to deliver" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="dhaka">Inside Dhaka</SelectItem>
-                                        <SelectItem value="outside">Outside Dhaka</SelectItem>
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
-                    
-                    <AccordionItem value="mobile" className="border rounded-md px-4">
-                         <AccordionTrigger className="hover:no-underline">
-                            <span className="flex items-center gap-2"><Smartphone className="w-5 h-5"/> Mobile Banking</span>
-                         </AccordionTrigger>
-                         <AccordionContent className="pt-4 space-y-4">
+                                <SelectContent>
+                                    <SelectItem value="dhaka">Inside Dhaka</SelectItem>
+                                    <SelectItem value="outside">Outside Dhaka</SelectItem>
+                                </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    </TabsContent>
+                    <TabsContent value="mobile" className="mt-4">
+                        <RadioGroup onValueChange={handlePaymentMethodChange} value={paymentMethod} className="grid grid-cols-1 gap-4">
                             <div className="bg-secondary p-4 rounded-md">
                                 <p className="text-sm text-secondary-foreground">Please send ৳{subtotal.toLocaleString()} to one of the following numbers and enter the Transaction ID below.</p>
                             </div>
@@ -224,7 +228,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                         <Image src="/assets/bkash.svg" alt="bKash" width={60} height={20}/>
                                     </FormLabel>
                                 </FormItem>
-                                 <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
                                     <FormControl>
                                         <RadioGroupItem value="nagad" id="nagad" />
                                     </FormControl>
@@ -233,30 +237,24 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                     </FormLabel>
                                 </FormItem>
                             </div>
-                             {['bkash', 'nagad'].includes(paymentMethod) && (
                                 <FormField
                                     control={form.control}
                                     name="transactionId"
-                                    render={({ field }) => (
+                                    render={({ field: trxField }) => (
                                         <FormItem>
                                         <FormLabel>Transaction ID</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Enter your TrxID here" {...field} />
+                                            <Input placeholder="Enter your TrxID here" {...trxField} />
                                         </FormControl>
                                         <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                            )}
-                         </AccordionContent>
-                    </AccordionItem>
-
-                     <AccordionItem value="card" className="border rounded-md px-4">
-                         <AccordionTrigger className="hover:no-underline">
-                           <span className="flex items-center gap-2"><CreditCard className="w-5 h-5"/> Card / Bank Transfer</span>
-                         </AccordionTrigger>
-                         <AccordionContent className="pt-4 space-y-4">
-                             <div className="bg-secondary p-4 rounded-md">
+                        </RadioGroup>
+                    </TabsContent>
+                    <TabsContent value="card" className="mt-4">
+                         <RadioGroup onValueChange={handlePaymentMethodChange} value={paymentMethod} className="grid grid-cols-1 gap-4">
+                            <div className="bg-secondary p-4 rounded-md">
                                 <p className="text-sm text-secondary-foreground">Please send ৳{subtotal.toLocaleString()} to one of the following accounts and enter the Transaction ID below.</p>
                             </div>
                            <div className="grid grid-cols-2 gap-4">
@@ -277,27 +275,26 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                     </FormLabel>
                                 </FormItem>
                             </div>
-                            {['trust', 'brac'].includes(paymentMethod) && (
-                                <FormField
-                                    control={form.control}
-                                    name="transactionId"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Transaction ID</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Enter your TrxID here" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
-                         </AccordionContent>
-                    </AccordionItem>
-                </RadioGroup>
-            </Accordion>
-            <FormMessage>{form.formState.errors.paymentMethod?.message}</FormMessage>
-        </FormItem>
+                            <FormField
+                                control={form.control}
+                                name="transactionId"
+                                render={({ field: trxField }) => (
+                                    <FormItem>
+                                    <FormLabel>Transaction ID</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Enter your TrxID here" {...trxField} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </RadioGroup>
+                    </TabsContent>
+                </Tabs>
+                <FormMessage>{form.formState.errors.paymentMethod?.message}</FormMessage>
+            </FormItem>
+        )}
+        />
         
 
         <div className="bg-muted/50 p-4 rounded-lg space-y-2">
@@ -326,3 +323,5 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
     </Form>
   )
 }
+
+    
