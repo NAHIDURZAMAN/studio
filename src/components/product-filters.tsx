@@ -14,7 +14,7 @@ type ProductFiltersProps = {
 };
 
 const categories = ['Drop Shoulder Tees', 'Jerseys', 'Hoodies', 'Basic Collection'];
-const colors = ['Classic Black', 'Crisp White', 'Seasonal Colors'];
+const colors = ['Classic Black', 'Crisp White', 'Navy Blue', 'Heather Grey', 'Seasonal Colors'];
 const priceRanges = [
   { value: 'all', label: 'All Prices' },
   { value: 'under-1000', label: 'Under ৳1000' },
@@ -64,7 +64,7 @@ export default function ProductFilters({ onFilterChange }: ProductFiltersProps) 
           Clear
         </Button>
       </div>
-      <Accordion type="multiple" defaultValue={['category', 'price']} className="w-full">
+      <Accordion type="multiple" defaultValue={['category', 'price', 'color']} className="w-full">
         <AccordionItem value="category">
           <AccordionTrigger className="font-semibold">Category</AccordionTrigger>
           <AccordionContent>
