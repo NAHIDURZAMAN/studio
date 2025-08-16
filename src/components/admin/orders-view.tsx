@@ -75,15 +75,15 @@ export default function OrdersView() {
   const getStatusColorClass = (status: Order['order_status']) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100/50 hover:bg-yellow-100/80 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50';
+        return 'bg-yellow-200/60 hover:bg-yellow-200/90 dark:bg-yellow-900/40 dark:hover:bg-yellow-900/60';
       case 'confirmed':
-        return 'bg-blue-100/50 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:hover:bg-blue-900/50';
+        return 'bg-blue-200/60 hover:bg-blue-200/90 dark:bg-blue-900/40 dark:hover:bg-blue-900/60';
       case 'shipped':
-        return 'bg-green-100/50 hover:bg-green-100/80 dark:bg-green-900/30 dark:hover:bg-green-900/50';
+        return 'bg-green-200/60 hover:bg-green-200/90 dark:bg-green-900/40 dark:hover:bg-green-900/60';
       case 'cancelled':
-        return 'bg-gray-200/50 hover:bg-gray-200/80 dark:bg-gray-700/30 dark:hover:bg-gray-700/50';
+        return 'bg-gray-300/60 hover:bg-gray-300/90 dark:bg-gray-700/40 dark:hover:bg-gray-700/60';
        case 'delivered':
-        return 'bg-green-100/50 hover:bg-green-100/80 dark:bg-green-900/30 dark:hover:bg-green-900/50';
+        return 'bg-green-200/60 hover:bg-green-200/90 dark:bg-green-900/40 dark:hover:bg-green-900/60';
       default:
         return 'hover:bg-muted/50';
     }
