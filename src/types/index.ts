@@ -27,12 +27,13 @@ export type Order = {
   delivery_charge: number;
   customer_name: string;
   customer_phone: string;
-  customer_email?: string;
+  secondary_phone?: string;
+  customer_email: string;
   customer_address: string;
   payment_method: string;
   delivery_location?: 'dhaka' | 'outside';
   transaction_id?: string;
-  order_status: 'pending' | 'shipped' | 'delivered' | 'cancelled';
+  order_status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
   size: string;
   products: { // This comes from the join query
     name: string;

@@ -29,7 +29,8 @@ import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group"
 const checkoutSchema = z.object({
   name: z.string().min(2, "Name is required."),
   phone: z.string().regex(/^(?:\+88|88)?(01[3-9]\d{8})$/, "Invalid Bangladeshi phone number."),
-  email: z.string().email("A valid email address is required.").optional().or(z.literal('')),
+  secondary_phone: z.string().optional(),
+  email: z.string().email("A valid email address is required."),
   address: z.string().min(10, "Full address is required."),
   size: z.string({ required_error: "Please select a size."}),
   paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'trust', 'brac'], { required_error: "Please select a payment method." }),
@@ -71,6 +72,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
       email: "",
       address: "",
       transactionId: "",
+      secondary_phone: "",
     },
   });
 
@@ -118,6 +120,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
         delivery_charge: paymentMethod === 'cod' ? deliveryCharge : 0,
         customer_name: values.name,
         customer_phone: values.phone,
+        secondary_phone: values.secondary_phone,
         customer_email: values.email,
         customer_address: values.address,
         payment_method: values.paymentMethod,
@@ -205,9 +208,22 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>Phone Number (WhatsApp)</FormLabel>
               <FormControl>
                 <Input placeholder="01xxxxxxxxx" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="secondary_phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Secondary Phone Number (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Another contact number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -218,7 +234,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email (Optional)</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="you@example.com" {...field} />
               </FormControl>
