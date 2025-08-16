@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useMemo, useState } from "react"
 import type { Product, Filters } from "@/types"
-import Hero from "@/components/hero"
+import Navbar from "@/components/navbar"
 import ProductFilters from "@/components/product-filters"
 import ProductCard from "@/components/product-card"
 import CheckoutSheet from "@/components/checkout-sheet"
@@ -60,10 +60,18 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <main className="flex-grow">
-        <Hero />
-        
+      <Navbar />
+      <main className="flex-grow pt-16">
         <div className="container mx-auto px-4 py-8">
+           <div className="text-center mb-12">
+             <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-foreground">
+               Your Style, Your Way.
+             </h1>
+             <p className="mt-4 text-lg font-alegreya text-muted-foreground max-w-2xl mx-auto">
+               From the streets of Mirpur to every corner of Bangladesh, X Style delivers the freshest urban fashion.
+             </p>
+           </div>
+          
           <ProductFilters 
             onFilterChange={setFilters} 
             onSearchChange={setSearchTerm} 
