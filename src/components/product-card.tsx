@@ -46,8 +46,8 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
         <p className="font-alegreya text-sm text-muted-foreground">{product.category}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
-        <p className="text-xl font-bold text-primary">৳{product.price.toLocaleString()}</p>
-        <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock}>
+        <p className="text-lg md:text-xl font-bold text-primary">৳{product.price.toLocaleString()}</p>
+        <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock} size="sm" className="md:text-sm">
             <ShoppingCart className="mr-2 h-4 w-4" />
             Buy Now
         </Button>
