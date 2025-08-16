@@ -1,14 +1,16 @@
-import { ShoppingBag } from 'lucide-react';
+import Image from "next/image";
+import Link from "next/link";
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="container mx-auto flex h-20 items-center justify-between px-4">
+        <Link href="/" className="flex items-center gap-2">
+           <Image src="/assets/logo.png" alt="X Style Logo" width={60} height={60} className="rounded-full" />
+           <span className="text-2xl font-bold font-headline text-primary">X Style</span>
+        </Link>
         <div className="flex items-center gap-2">
-           <span className="text-2xl font-bold font-headline">X Style</span>
-        </div>
-        <div className="flex items-center gap-2">
-            <span className="text-lg font-headline">Be Your Outfit</span>
+            <span className="text-lg font-headline text-accent">Be Your Outfit</span>
         </div>
       </div>
     </header>
