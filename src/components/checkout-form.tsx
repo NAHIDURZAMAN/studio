@@ -24,12 +24,14 @@ import { Banknote, CreditCard, Minus, Plus, Smartphone, Truck } from "lucide-rea
 import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { supabase } from "@/lib/supabase"
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group"
 
 const checkoutSchema = z.object({
   name: z.string().min(2, "Name is required."),
   phone: z.string().regex(/^(?:\+88|88)?(01[3-9]\d{8})$/, "Invalid Bangladeshi phone number."),
   email: z.string().email("A valid email address is required.").optional().or(z.literal('')),
   address: z.string().min(10, "Full address is required."),
+  size: z.string({ required_error: "Please select a size."}),
   paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'trust', 'brac'], { required_error: "Please select a payment method." }),
   deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }).optional(),
   transactionId: z.string().optional(),
@@ -122,6 +124,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
         delivery_location: values.deliveryLocation,
         transaction_id: values.transactionId,
         order_status: 'pending',
+        size: values.size,
     };
 
     const { error } = await supabase.from('orders').insert([orderData]);
@@ -157,6 +160,33 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
             </div>
         </div>
         <Separator/>
+
+        <FormField
+            control={form.control}
+            name="size"
+            render={({ field }) => (
+                <FormItem className="space-y-3">
+                <FormLabel>Select Size</FormLabel>
+                <FormControl>
+                    <ToggleGroup 
+                        type="single" 
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        variant="outline"
+                        className="flex flex-wrap justify-start"
+                    >
+                        {product.sizes.map(size => (
+                            <ToggleGroupItem key={size} value={size} aria-label={`Toggle ${size}`}>
+                                {size}
+                            </ToggleGroupItem>
+                        ))}
+                    </ToggleGroup>
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+
         <FormField
           control={form.control}
           name="name"

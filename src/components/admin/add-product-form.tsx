@@ -11,6 +11,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -21,6 +22,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { FileUp, Image as ImageIcon, Upload, X } from "lucide-react"
 import * as React from "react"
 import Image from "next/image"
+import { Checkbox } from "../ui/checkbox"
+
+const sizes = ["S", "M", "L", "XL", "XXL", "XXXL"] as const;
 
 const productSchema = z.object({
   name: z.string().min(2, "Product name is required."),
@@ -34,6 +38,9 @@ const productSchema = z.object({
   }),
   stock: z.coerce.number().int().min(0, "Stock can't be negative."),
   images: z.any().refine(files => files?.length > 0, 'At least one image is required.'),
+  sizes: z.array(z.string()).refine(value => value.some(item => item), {
+    message: "You have to select at least one size.",
+  }),
   data_ai_hint: z.string().optional(),
 })
 
@@ -48,6 +55,7 @@ export default function AddProductForm() {
       price: 0,
       stock: 0,
       images: undefined,
+      sizes: [],
     },
   })
 
@@ -276,6 +284,56 @@ export default function AddProductForm() {
                     )}
                 />
              </div>
+                <FormField
+                    control={form.control}
+                    name="sizes"
+                    render={() => (
+                        <FormItem>
+                        <div className="mb-4">
+                            <FormLabel className="text-base">Available Sizes</FormLabel>
+                            <FormDescription>
+                            Select the sizes you want to make available for this product.
+                            </FormDescription>
+                        </div>
+                        <div className="flex flex-wrap gap-4">
+                        {sizes.map((size) => (
+                            <FormField
+                            key={size}
+                            control={form.control}
+                            name="sizes"
+                            render={({ field }) => {
+                                return (
+                                <FormItem
+                                    key={size}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                    <FormControl>
+                                    <Checkbox
+                                        checked={field.value?.includes(size)}
+                                        onCheckedChange={(checked) => {
+                                        return checked
+                                            ? field.onChange([...field.value, size])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                (value) => value !== size
+                                                )
+                                            )
+                                        }}
+                                    />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                    {size}
+                                    </FormLabel>
+                                </FormItem>
+                                )
+                            }}
+                            />
+                        ))}
+                        </div>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
                 <FormField
                 control={form.control}
                 name="data_ai_hint"

@@ -8,6 +8,7 @@ export type Product = {
   stock: number;
   description: string;
   data_ai_hint?: string;
+  sizes: string[];
 };
 
 export type Filters = {
@@ -32,6 +33,7 @@ export type Order = {
   delivery_location?: 'dhaka' | 'outside';
   transaction_id?: string;
   order_status: 'pending' | 'shipped' | 'delivered' | 'cancelled';
+  size: string;
   products: { // This comes from the join query
     name: string;
   } | null;
