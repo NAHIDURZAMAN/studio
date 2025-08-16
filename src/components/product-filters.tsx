@@ -139,7 +139,7 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
                   </SelectContent>
               </Select>
               {hasActiveFilters && (
-                 <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-foreground col-span-1 sm:col-span-2 md:col-span-1">
+                 <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-foreground col-span-full sm:col-span-1">
                     <X className="mr-2 h-4 w-4" />
                     Clear All
                 </Button>
