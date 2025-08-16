@@ -113,6 +113,67 @@ export default function AddProductForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
+                control={form.control}
+                name="images"
+                render={({ field: { onChange, value, ...rest } }) => (
+                    <FormItem>
+                    <FormLabel>Product Images</FormLabel>
+                    <FormControl>
+                        <div className="relative">
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                className="sr-only"
+                                id="file-upload"
+                                onChange={(e) => onChange(e.target.files)}
+                                {...rest}
+                            />
+                            <label 
+                                htmlFor="file-upload" 
+                                className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-muted"
+                            >
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <FileUp className="w-8 h-8 mb-4 text-muted-foreground" />
+                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                                </div>
+                            </label>
+                        </div>
+                    </FormControl>
+                    {selectedFiles && selectedFiles.length > 0 && (
+                        <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+                            {Array.from(selectedFiles).map((file: File, index) => (
+                                <div key={index} className="relative group">
+                                    <Image
+                                        src={URL.createObjectURL(file)}
+                                        alt={file.name}
+                                        width={100}
+                                        height={100}
+                                        className="object-cover w-full h-24 rounded-md"
+                                        onLoad={e => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newFiles = Array.from(selectedFiles).filter((_, i) => i !== index);
+                                            const dataTransfer = new DataTransfer();
+                                            newFiles.forEach(file => dataTransfer.items.add(file));
+                                            onChange(dataTransfer.files.length > 0 ? dataTransfer.files : null);
+                                        }}
+                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
@@ -215,67 +276,6 @@ export default function AddProductForm() {
                     )}
                 />
              </div>
-             <FormField
-                control={form.control}
-                name="images"
-                render={({ field: { onChange, value, ...rest } }) => (
-                    <FormItem>
-                    <FormLabel>Product Images</FormLabel>
-                    <FormControl>
-                        <div className="relative">
-                            <input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                className="sr-only"
-                                id="file-upload"
-                                onChange={(e) => onChange(e.target.files)}
-                                {...rest}
-                            />
-                            <label 
-                                htmlFor="file-upload" 
-                                className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-muted"
-                            >
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <FileUp className="w-8 h-8 mb-4 text-muted-foreground" />
-                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
-                                </div>
-                            </label>
-                        </div>
-                    </FormControl>
-                    {selectedFiles && selectedFiles.length > 0 && (
-                        <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-                            {Array.from(selectedFiles).map((file: File, index) => (
-                                <div key={index} className="relative group">
-                                    <Image
-                                        src={URL.createObjectURL(file)}
-                                        alt={file.name}
-                                        width={100}
-                                        height={100}
-                                        className="object-cover w-full h-24 rounded-md"
-                                        onLoad={e => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const newFiles = Array.from(selectedFiles).filter((_, i) => i !== index);
-                                            const dataTransfer = new DataTransfer();
-                                            newFiles.forEach(file => dataTransfer.items.add(file));
-                                            onChange(dataTransfer.files.length > 0 ? dataTransfer.files : null);
-                                        }}
-                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <X className="h-3 w-3" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
                 <FormField
                 control={form.control}
                 name="data_ai_hint"
@@ -299,5 +299,3 @@ export default function AddProductForm() {
     </Card>
   )
 }
-
-    
