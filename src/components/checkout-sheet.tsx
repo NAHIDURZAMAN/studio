@@ -61,6 +61,9 @@ export default function CheckoutSheet({ product, isOpen, onOpenChange }: Checkou
                   </>
                 )}
               </Carousel>
+               <div className="mt-4">
+                <p className="text-sm font-alegreya text-muted-foreground">{product.description}</p>
+              </div>
             </div>
             <CheckoutForm product={product} onSuccess={handleSuccess} />
           </div>

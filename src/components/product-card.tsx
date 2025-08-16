@@ -43,7 +43,7 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
       </CardHeader>
       <CardContent className="p-4 flex-grow">
         <CardTitle className="font-headline text-lg mb-1">{product.name}</CardTitle>
-        <p className="font-alegreya text-sm text-muted-foreground h-10">{product.description}</p>
+        <p className="font-alegreya text-sm text-muted-foreground">{product.category}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <p className="text-xl font-bold text-primary">৳{product.price.toLocaleString()}</p>
