@@ -13,7 +13,7 @@ export default function Hero() {
               Your Style, Your Way.
             </h1>
             <p className="text-lg text-secondary-foreground font-alegreya">
-              Define your look with our exclusive collection. We are committed to providing the best quality in every stitch.
+              From the streets of Mirpur to every corner of Bangladesh, X Style delivers the freshest urban fashion.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
                <div className="bg-card p-4 rounded-lg border flex-1">
