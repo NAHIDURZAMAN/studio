@@ -15,7 +15,7 @@ import { format } from "date-fns"
 import { Separator } from "../ui/separator"
 import { Download, Mail, MapPin, Package, Phone, User } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
 import jsPDF from "jspdf";
@@ -34,6 +34,12 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   const invoiceRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (order) {
+      setCurrentStatus(order.order_status);
+    }
+  }, [order]);
 
 
   if (!order) return null;
@@ -163,7 +169,7 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
                 <Separator />
                  <h4 className="font-semibold text-lg pt-2">Status</h4>
                  <div className="flex items-center gap-4">
-                    <Select defaultValue={currentStatus} onValueChange={(val) => setCurrentStatus(val as Order['order_status'])}>
+                    <Select value={currentStatus} onValueChange={(val) => setCurrentStatus(val as Order['order_status'])}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Update status" />
                         </SelectTrigger>
