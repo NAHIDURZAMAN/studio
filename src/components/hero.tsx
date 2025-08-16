@@ -13,7 +13,7 @@ export default function Hero() {
               Your Style, Your Way.
             </h1>
             <p className="text-lg text-secondary-foreground font-alegreya">
-              From the streets of Mirpur to every corner of Bangladesh, X STYLE delivers the freshest urban fashion.
+              Define your look with our exclusive collection. We are committed to providing the best quality in every stitch.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
                <div className="bg-card p-4 rounded-lg border flex-1">
@@ -32,7 +32,7 @@ export default function Hero() {
             </div>
           </div>
           <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-xl">
-             <Image src="https://placehold.co/600x400.png" alt="X STYLE Fashion" layout="fill" objectFit="cover" data-ai-hint="fashion store" />
+             <Image src="https://placehold.co/600x400.png" alt="X Style Fashion" layout="fill" objectFit="cover" data-ai-hint="fashion store" />
           </div>
         </div>
       </div>

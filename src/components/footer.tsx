@@ -10,9 +10,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           
           <div className="md:col-span-4">
-            <h3 className="font-headline text-2xl mb-4 text-primary">X STYLE</h3>
+            <h3 className="font-headline text-2xl mb-4 text-primary">X Style</h3>
             <p className="text-sm font-alegreya">
-              Urban fashion from the heart of Mirpur 12, Dhaka. We ship style to every corner of Bangladesh.
+              Be Your Outfit. We ship style to every corner of Bangladesh.
             </p>
           </div>
 
@@ -22,7 +22,7 @@ export default function Footer() {
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
                 <p className="text-sm">
-                  <span className="font-semibold">X STYLE Store:</span> Mirpur 12, Dhaka
+                  <span className="font-semibold">X Style Store:</span> Mirpur 12, Dhaka
                 </p>
               </div>
               <div className="flex items-start gap-3">
@@ -69,7 +69,7 @@ export default function Footer() {
         </div>
         <Separator className="my-6 bg-border/50" />
         <div className="text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} X STYLE. All Rights Reserved.
+          &copy; {new Date().getFullYear()} X Style. All Rights Reserved.
         </div>
       </div>
     </footer>
