@@ -3,7 +3,6 @@
 import * as React from "react"
 import { useMemo, useState } from "react"
 import type { Product, Filters } from "@/types"
-import Header from "@/components/header"
 import Hero from "@/components/hero"
 import ProductFilters from "@/components/product-filters"
 import ProductCard from "@/components/product-card"
@@ -61,7 +60,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header />
       <main className="flex-grow">
         <Hero />
         
