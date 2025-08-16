@@ -19,11 +19,12 @@ export default function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/assets/logo.png"
+            src="https://placehold.co/40x40.png"
             alt="X Style Logo"
             width={40}
             height={40}
             className="h-10 w-auto"
+            data-ai-hint="logo"
           />
           <span className="font-headline text-2xl font-bold text-primary">
             X Style
