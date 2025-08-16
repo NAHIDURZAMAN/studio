@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, useCallback } from "react"
 import type { Product, Filters } from "@/types"
 import Navbar from "@/components/navbar"
 import ProductFilters from "@/components/product-filters"
@@ -11,6 +11,7 @@ import Footer from "@/components/footer"
 import { Separator } from "@/components/ui/separator"
 import { supabase } from "@/lib/supabase"
 import { Skeleton } from "@/components/ui/skeleton"
+import PaginationControls from "@/components/pagination-controls"
 
 const priceRanges = {
   'under-1000': (price: number) => price < 1000,
@@ -18,6 +19,8 @@ const priceRanges = {
   'premium': (price: number) => price > 2000,
   'all': () => true,
 };
+
+const PRODUCTS_PER_PAGE = 20;
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -29,20 +32,55 @@ export default function Home() {
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+
+  const fetchProducts = useCallback(async (page: number, currentFilters: Filters, currentSearchTerm: string) => {
+    setLoading(true);
+    const from = (page - 1) * PRODUCTS_PER_PAGE;
+    const to = from + PRODUCTS_PER_PAGE - 1;
+
+    let query = supabase
+      .from('products')
+      .select('*', { count: 'exact' });
+
+    if (currentSearchTerm) {
+      query = query.ilike('name', `%${currentSearchTerm}%`);
+    }
+    if (currentFilters.categories.length > 0) {
+      query = query.in('category', currentFilters.categories);
+    }
+    if (currentFilters.colors.length > 0) {
+      query = query.in('color', currentFilters.colors);
+    }
+    if (currentFilters.priceRange !== 'all') {
+      const priceFilter = priceRanges[currentFilters.priceRange as keyof typeof priceRanges];
+      // This is tricky with client-side functions. We will filter post-fetch for price for now
+    }
+
+    query = query.order('created_at', { ascending: false }).range(from, to);
+
+    const { data, error, count } = await query;
+    
+    if (error) {
+      console.error('Error fetching products:', error);
+      setProducts([]);
+    } else {
+      let filteredData = data as Product[];
+      // Apply price filter client-side
+      if (currentFilters.priceRange !== 'all') {
+          const priceFilterFunc = priceRanges[currentFilters.priceRange as keyof typeof priceRanges];
+          filteredData = filteredData.filter(p => priceFilterFunc(p.price));
+      }
+      setProducts(filteredData);
+      setTotalProducts(count || 0);
+    }
+
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-      if (error) {
-        console.error('Error fetching products:', error);
-      } else {
-        setProducts(data as Product[]);
-      }
-      setLoading(false);
-    };
-    
-    fetchProducts();
+    fetchProducts(currentPage, filters, searchTerm);
 
     const channel = supabase
       .channel('products-changes')
@@ -50,7 +88,7 @@ export default function Home() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
         (payload) => {
-          fetchProducts(); // Refetch all products on any change
+          fetchProducts(currentPage, filters, searchTerm); // Refetch current page on any change
         }
       )
       .subscribe();
@@ -58,28 +96,23 @@ export default function Home() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentPage, filters, searchTerm, fetchProducts]);
+
+  const handleFilterChange = (newFilters: Filters) => {
+    setCurrentPage(1);
+    setFilters(newFilters);
+  };
+
+  const handleSearchChange = (newSearchTerm: string) => {
+    setCurrentPage(1);
+    setSearchTerm(newSearchTerm);
+  };
 
   const handleBuyNow = (product: Product) => {
     setSelectedProduct(product);
   };
-
-  const searchSuggestions = useMemo(() => {
-    if (!searchTerm) return [];
-    return products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, products]);
-
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const categoryMatch = filters.categories.length === 0 || filters.categories.includes(product.category);
-      const colorMatch = filters.colors.length === 0 || filters.colors.includes(product.color);
-      const priceMatch = priceRanges[filters.priceRange as keyof typeof priceRanges](product.price);
-      const searchMatch = searchTerm === "" || product.name.toLowerCase().includes(searchTerm.toLowerCase());
-      return categoryMatch && colorMatch && priceMatch && searchMatch;
-    });
-  }, [filters, searchTerm, products]);
+  
+  const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -96,11 +129,11 @@ export default function Home() {
            </div>
           
           <ProductFilters 
-            onFilterChange={setFilters} 
-            onSearchChange={setSearchTerm} 
+            onFilterChange={handleFilterChange} 
+            onSearchChange={handleSearchChange} 
             currentFilters={filters}
             searchTerm={searchTerm}
-            searchSuggestions={searchSuggestions}
+            searchSuggestions={[]} // Suggestions might need rethink with pagination
           />
 
           <section className="mt-8">
@@ -113,18 +146,26 @@ export default function Home() {
             ) : (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-6 md:gap-6">
-                  {filteredProducts.map(product => (
+                  {products.map(product => (
                     <ProductCard key={product.id} product={product} onBuyNow={handleBuyNow} />
                   ))}
                 </div>
-                {filteredProducts.length === 0 && (
+                {products.length === 0 && (
                    <div className="col-span-full text-center py-16">
-                      <p className="text-muted-foreground text-lg">No products match your filters. Try different options!</p>
+                      <p className="text-muted-foreground text-lg">No products match your search or filters. Try different options!</p>
                    </div>
                 )}
               </>
             )}
           </section>
+          
+          {totalPages > 1 && !loading && (
+             <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+          )}
         </div>
 
         <Separator className="my-12 container" />
