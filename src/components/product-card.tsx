@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Button } from "@/components/ui/button"
 import { Badge } from "./ui/badge"
 import { ShoppingCart } from "lucide-react"
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "./ui/carousel"
+import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel"
 
 type ProductCardProps = {
   product: Product;
@@ -34,12 +34,6 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          {product.images.length > 1 && (
-            <>
-              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
-              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
-            </>
-          )}
         </Carousel>
         {(isLimitedStock || isOutOfStock) && (
              <Badge variant={isOutOfStock ? "destructive" : "secondary"} className="absolute top-3 right-3 z-10">

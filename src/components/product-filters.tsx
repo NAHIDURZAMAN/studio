@@ -74,11 +74,12 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
   }
   
   const activeCategory = currentFilters.categories.length > 0 ? currentFilters.categories[0] : 'All';
+  const hasActiveFilters = currentFilters.categories.length > 0 || currentFilters.colors.length > 0 || currentFilters.priceRange !== 'all' || searchTerm !== "";
 
   return (
     <div className="bg-secondary/50 p-4 rounded-lg">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-        <div className="md:col-span-4 lg:col-span-5">
+        <div className="md:col-span-12 lg:col-span-4">
            <div className="relative" ref={searchRef}>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -105,8 +106,8 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
               )}
            </div>
         </div>
-        <div className="md:col-span-8 lg:col-span-7">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="md:col-span-12 lg:col-span-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <Select onValueChange={handleCategoryChange} value={activeCategory}>
                   <SelectTrigger className="w-full">
                       <SelectValue placeholder="Category" />
@@ -137,10 +138,12 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
                       ))}
                   </SelectContent>
               </Select>
-               <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-foreground">
-                  <X className="mr-2 h-4 w-4" />
-                  Clear All
-              </Button>
+              {hasActiveFilters && (
+                 <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-foreground col-span-1 sm:col-span-2 md:col-span-1">
+                    <X className="mr-2 h-4 w-4" />
+                    Clear All
+                </Button>
+              )}
             </div>
         </div>
 
