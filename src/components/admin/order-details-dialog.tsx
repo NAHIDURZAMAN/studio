@@ -13,11 +13,14 @@ import type { Order } from "@/types"
 import { Badge } from "../ui/badge"
 import { format } from "date-fns"
 import { Separator } from "../ui/separator"
-import { Download, Mail, MapPin, Package, Phone, User, Hash, Edit } from "lucide-react"
+import { Download, Mail, MapPin, Package, Phone, User } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import InvoiceTemplate from "./invoice-template"
 
 type OrderDetailsDialogProps = {
   order: Order | null
@@ -30,6 +33,8 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
   const [currentStatus, setCurrentStatus] = useState(order?.order_status);
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
+  const invoiceRef = useRef<HTMLDivElement>(null);
+
 
   if (!order) return null;
 
@@ -61,7 +66,17 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
   };
 
   const handleDownload = () => {
-    alert("PDF download functionality will be implemented here.");
+    const input = invoiceRef.current;
+    if (input) {
+      html2canvas(input, { scale: 2 }).then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`invoice-${order.order_id}.pdf`);
+      });
+    }
   }
 
   const orderStatuses: Order['order_status'][] = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
@@ -82,6 +97,13 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
           </DialogDescription>
         </DialogHeader>
         
+        {/* This div is for PDF generation only, it won't be visible */}
+        <div className="absolute -z-10 -left-[9999px] -top-[9999px]">
+          <div ref={invoiceRef}>
+            <InvoiceTemplate order={order} />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
             {/* Left Column */}
             <div className="space-y-4">
