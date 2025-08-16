@@ -42,7 +42,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/login');
+    router.push('/admin/login');
   };
 
   return (
@@ -90,7 +90,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <DropdownMenuItem asChild><Link href="/login">Login</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/admin/login">Login</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link href="/signup">Sign Up</Link></DropdownMenuItem>
                 </>
               )}
@@ -120,7 +120,7 @@ export default function Navbar() {
                       </>
                     ) : (
                       <>
-                        <Link href="/login" className="text-lg font-medium">Login</Link>
+                        <Link href="/admin/login" className="text-lg font-medium">Login</Link>
                         <Link href="/signup" className="text-lg font-medium">Sign Up</Link>
                       </>
                     )}

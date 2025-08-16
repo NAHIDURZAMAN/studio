@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-headline">Forgot Password</CardTitle>
           <CardDescription>
-            Enter your email and we&apos;ll send you a link to reset your password.
+            Enter your email and we'll send you a link to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
           <Button className="w-full">Send Reset Link</Button>
            <div className="mt-4 text-center text-sm">
             Remembered your password?{" "}
-            <Link href="/login" prefetch={false} className="underline">
+            <Link href="/admin/login" prefetch={false} className="underline">
               Login
             </Link>
           </div>

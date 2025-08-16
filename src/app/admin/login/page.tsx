@@ -58,8 +58,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <form onSubmit={handleLogin}>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-headline">Welcome Back!</CardTitle>
-            <CardDescription>Enter your email below to login to your account.</CardDescription>
+            <CardTitle className="text-2xl font-headline">Admin Login</CardTitle>
+            <CardDescription>Enter your email below to login to the admin panel.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
@@ -93,10 +93,10 @@ export default function LoginPage() {
             <Button className="w-full" type="submit" disabled={loading}>
               {loading ? "Logging in..." : "Login"}
             </Button>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link href="/signup" prefetch={false} className="underline">
-                Sign up
+             <div className="mt-4 text-center text-sm">
+              Not an admin?{" "}
+              <Link href="/" prefetch={false} className="underline">
+                Go to Homepage
               </Link>
             </div>
           </CardFooter>

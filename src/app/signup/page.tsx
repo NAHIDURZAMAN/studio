@@ -32,7 +32,7 @@ export default function SignupPage() {
           <Button className="w-full">Create Account</Button>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/login" prefetch={false} className="underline">
+            <Link href="/admin/login" prefetch={false} className="underline">
               Login
             </Link>
           </div>

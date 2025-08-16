@@ -23,7 +23,7 @@ export default function AdminPage() {
       if (session?.user && adminEmails.includes(session.user.email ?? '')) {
         setIsAdmin(true);
       } else {
-        router.push('/login');
+        router.push('/admin/login');
       }
       setLoading(false);
     };
