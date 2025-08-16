@@ -51,7 +51,7 @@ export default function Navbar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild><Link href="/login">Login</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/signup">Sign Up</Link></DropdownMenuItem>
-              <DropdownMenuItem>Orders</DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/admin">My Orders</Link></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
@@ -70,7 +70,7 @@ export default function Navbar() {
                     <Separator />
                     <Link href="/login" className="text-lg font-medium">Login</Link>
                     <Link href="/signup" className="text-lg font-medium">Sign Up</Link>
-                    <Link href="#" className="text-lg font-medium">My Orders</Link>
+                    <Link href="/admin" className="text-lg font-medium">My Orders</Link>
                 </div>
             </SheetContent>
           </Sheet>
