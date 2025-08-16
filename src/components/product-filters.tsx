@@ -79,7 +79,7 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
 
   return (
     <div className="bg-secondary/50 p-4 rounded-lg">
-      <div className="flex flex-col md:flex-row md:items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <div className="relative w-full md:w-auto md:flex-grow lg:flex-grow-0 lg:w-64" ref={searchRef}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -106,8 +106,7 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
             )}
         </div>
 
-        <div className="flex-grow overflow-x-auto">
-          <div className="flex space-x-4">
+        <div className="flex items-center gap-4 flex-wrap">
             <div className="flex-shrink-0 w-36">
               <Select onValueChange={handleCategoryChange} value={activeCategory}>
                   <SelectTrigger>
@@ -146,7 +145,6 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
                   </SelectContent>
               </Select>
             </div>
-          </div>
         </div>
 
         {hasActiveFilters && (
