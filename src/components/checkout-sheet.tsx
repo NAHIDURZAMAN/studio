@@ -42,13 +42,13 @@ export default function CheckoutSheet({ product, isOpen, onOpenChange }: Checkou
                 <CarouselContent>
                   {product.images.map((image, index) => (
                     <CarouselItem key={index}>
-                      <div className="relative h-48 w-full">
+                      <div className="aspect-[4/5] w-full relative">
                         <Image
                           src={image}
                           alt={`${product.name} image ${index + 1}`}
                           fill
                           className="object-cover rounded-md"
-                          data-ai-hint={product.dataAiHint}
+                          data-ai-hint={product.data_ai_hint}
                         />
                       </div>
                     </CarouselItem>
@@ -62,7 +62,7 @@ export default function CheckoutSheet({ product, isOpen, onOpenChange }: Checkou
                 )}
               </Carousel>
                <div className="mt-4">
-                <p className="text-sm font-alegreya text-muted-foreground">{product.description}</p>
+                <p className="text-sm font-alegreya text-muted-foreground whitespace-pre-wrap">{product.description}</p>
               </div>
             </div>
             <CheckoutForm product={product} onSuccess={handleSuccess} />

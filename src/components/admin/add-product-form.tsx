@@ -201,7 +201,7 @@ export default function AddProductForm() {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Describe the product" {...field} />
+                    <Textarea placeholder="Describe the product" rows={6} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
