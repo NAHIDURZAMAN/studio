@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import type { Order } from "@/types"
 import {
@@ -15,13 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge"
 import { format } from 'date-fns'
 import OrderDetailsDialog from "./order-details-dialog"
+import { Skeleton } from "../ui/skeleton"
 
 export default function OrdersView() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("orders")
@@ -35,22 +36,63 @@ export default function OrdersView() {
 
     if (error) {
       console.error("Error fetching orders:", error)
+      setOrders([])
     } else {
       setOrders(data as any)
     }
     setLoading(false);
-  }
+  }, [])
 
   useEffect(() => {
     fetchOrders()
-  }, [])
+    
+    const channel = supabase
+      .channel('orders-changes')
+      .on<Order>(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders' },
+        (payload) => {
+          setOrders(currentOrders => 
+            currentOrders.map(order => 
+              order.id === payload.new.id ? {...order, ...payload.new} : order
+            )
+          )
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+
+  }, [fetchOrders])
 
   if (loading) {
-    return <div>Loading orders...</div>
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Orders</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+             <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </CardContent>
+      </Card>
+    )
   }
   
   if (orders.length === 0) {
-    return <p>No orders yet.</p>
+    return (
+       <Card>
+        <CardHeader>
+          <CardTitle>Recent Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>No orders have been placed yet.</p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
