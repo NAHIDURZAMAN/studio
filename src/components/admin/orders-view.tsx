@@ -60,6 +60,7 @@ export default function OrdersView() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Order ID</TableHead>
               <TableHead>Order Date</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Product</TableHead>
@@ -70,6 +71,7 @@ export default function OrdersView() {
           <TableBody>
             {orders.map((order) => (
               <TableRow key={order.id}>
+                <TableCell className="font-mono">{order.order_id || 'N/A'}</TableCell>
                 <TableCell>{format(new Date(order.created_at), 'PPp')}</TableCell>
                 <TableCell>
                     <div className="font-medium">{order.customer_name}</div>

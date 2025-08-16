@@ -98,9 +98,18 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
     }
   }
 
+  const generateOrderId = (address: string) => {
+    const addressPrefix = address.substring(0, 3).toUpperCase();
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
+    return `X_${addressPrefix}${randomNumber}`;
+  }
+
 
   async function onSubmit(values: z.infer<typeof checkoutSchema>) {
+    const orderId = generateOrderId(values.address);
+
     const orderData = {
+        order_id: orderId,
         product_id: product.id,
         quantity,
         total_price: total,

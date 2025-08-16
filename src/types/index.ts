@@ -18,6 +18,7 @@ export type Filters = {
 
 export type Order = {
   id: number;
+  order_id: string;
   created_at: string;
   product_id: number;
   quantity: number;
