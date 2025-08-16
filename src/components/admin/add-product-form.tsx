@@ -18,16 +18,22 @@ import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Upload } from "lucide-react"
+import { FileUp, Image as ImageIcon, Upload, X } from "lucide-react"
+import * as React from "react"
+import Image from "next/image"
 
 const productSchema = z.object({
   name: z.string().min(2, "Product name is required."),
   description: z.string().min(10, "Description must be at least 10 characters."),
   price: z.coerce.number().min(1, "Price must be a positive number."),
-  category: z.enum(['Drop Shoulder Tees', 'Jerseys', 'Hoodies', 'Basic Collection']),
-  color: z.enum(['Black', 'White', 'Navy', 'Grey', 'Other']),
+  category: z.enum(['Drop Shoulder Tees', 'Jerseys', 'Hoodies', 'Basic Collection'], {
+    required_error: "Please select a category.",
+  }),
+  color: z.enum(['Black', 'White', 'Navy', 'Grey', 'Other'], {
+    required_error: "Please select a color.",
+  }),
   stock: z.coerce.number().int().min(0, "Stock can't be negative."),
-  images: z.string().min(1, "At least one image URL is required."),
+  images: z.any().refine(files => files?.length > 0, 'At least one image is required.'),
   data_ai_hint: z.string().optional(),
 })
 
@@ -41,31 +47,60 @@ export default function AddProductForm() {
       description: "",
       price: 0,
       stock: 0,
-      images: "",
+      images: undefined,
     },
   })
 
+  const selectedFiles = form.watch("images")
+
   async function onSubmit(values: z.infer<typeof productSchema>) {
-    const productData = {
-      ...values,
-      images: values.images.split(',').map(url => url.trim()),
-    };
+    try {
+      const files = values.images as FileList;
+      const imageUrls: string[] = [];
 
-    const { data, error } = await supabase.from('products').insert([productData]).select();
+      for (const file of Array.from(files)) {
+        const filePath = `public/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(filePath, file);
 
-    if (error) {
-      console.error("Error inserting product:", error)
-      toast({
-        title: "❌ Error",
-        description: "Failed to add the product. Please try again.",
-        variant: "destructive",
-      })
-    } else {
+        if (uploadError) {
+          throw new Error(`Image upload failed: ${uploadError.message}`);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('products')
+          .getPublicUrl(filePath);
+        
+        if (!publicUrlData.publicUrl) {
+            throw new Error("Could not get public URL for the uploaded file.")
+        }
+        imageUrls.push(publicUrlData.publicUrl);
+      }
+
+      const productData = {
+        ...values,
+        images: imageUrls,
+      };
+
+      const { error: insertError } = await supabase.from('products').insert([productData]).select();
+
+      if (insertError) {
+        throw new Error(`Failed to add product: ${insertError.message}`);
+      }
+
       toast({
         title: "🎉 Product Added!",
         description: `"${values.name}" has been added to your store.`,
       })
       form.reset()
+    } catch (error: any) {
+        console.error("Error submitting form:", error)
+        toast({
+            title: "❌ Error",
+            description: error.message || "An unexpected error occurred.",
+            variant: "destructive",
+        })
     }
   }
 
@@ -183,12 +218,60 @@ export default function AddProductForm() {
              <FormField
                 control={form.control}
                 name="images"
-                render={({ field }) => (
+                render={({ field: { onChange, value, ...rest } }) => (
                     <FormItem>
                     <FormLabel>Product Images</FormLabel>
                     <FormControl>
-                        <Textarea placeholder="Enter image URLs, separated by commas" {...field} />
+                        <div className="relative">
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                className="sr-only"
+                                id="file-upload"
+                                onChange={(e) => onChange(e.target.files)}
+                                {...rest}
+                            />
+                            <label 
+                                htmlFor="file-upload" 
+                                className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-muted"
+                            >
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <FileUp className="w-8 h-8 mb-4 text-muted-foreground" />
+                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                                </div>
+                            </label>
+                        </div>
                     </FormControl>
+                    {selectedFiles && selectedFiles.length > 0 && (
+                        <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+                            {Array.from(selectedFiles).map((file: File, index) => (
+                                <div key={index} className="relative group">
+                                    <Image
+                                        src={URL.createObjectURL(file)}
+                                        alt={file.name}
+                                        width={100}
+                                        height={100}
+                                        className="object-cover w-full h-24 rounded-md"
+                                        onLoad={e => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newFiles = Array.from(selectedFiles).filter((_, i) => i !== index);
+                                            const dataTransfer = new DataTransfer();
+                                            newFiles.forEach(file => dataTransfer.items.add(file));
+                                            onChange(dataTransfer.files.length > 0 ? dataTransfer.files : null);
+                                        }}
+                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     <FormMessage />
                     </FormItem>
                 )}
@@ -208,7 +291,7 @@ export default function AddProductForm() {
                 />
             <Button type="submit" disabled={form.formState.isSubmitting}>
                 <Upload className="mr-2 h-4 w-4" />
-                Add Product
+                {form.formState.isSubmitting ? 'Uploading...' : 'Add Product'}
             </Button>
           </form>
         </Form>
@@ -216,3 +299,5 @@ export default function AddProductForm() {
     </Card>
   )
 }
+
+    
