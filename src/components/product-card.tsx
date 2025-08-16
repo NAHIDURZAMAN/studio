@@ -49,7 +49,7 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <p className="text-base md:text-lg font-bold text-primary">৳{product.price.toLocaleString()}</p>
-        <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock} className="h-7 px-2 md:h-9 md:px-3">
+        <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock} className="h-6 px-1.5 md:h-9 md:px-3">
             <ShoppingCart className="mr-1 h-3 w-3" />
             <span className="text-xs md:text-sm">Buy Now</span>
         </Button>
