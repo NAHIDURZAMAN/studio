@@ -25,6 +25,7 @@ import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { supabase } from "@/lib/supabase"
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group"
+import { Checkbox } from "./ui/checkbox"
 
 const checkoutSchema = z.object({
   name: z.string().min(2, "Name is required."),
@@ -36,6 +37,7 @@ const checkoutSchema = z.object({
   paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'trust', 'brac'], { required_error: "Please select a payment method." }),
   deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }).optional(),
   transactionId: z.string().optional(),
+  codConfirmation: z.boolean().optional(),
 }).refine(data => {
   if (data.paymentMethod !== 'cod' && (!data.transactionId || data.transactionId.trim().length < 5)) {
     return false;
@@ -52,6 +54,14 @@ const checkoutSchema = z.object({
 }, {
     message: "Please select a delivery location for Cash on Delivery.",
     path: ["deliveryLocation"],
+}).refine(data => {
+    if (data.paymentMethod === 'cod' && !data.codConfirmation) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Please confirm you agree to pay on delivery.",
+    path: ["codConfirmation"],
 });
 
 
@@ -73,6 +83,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
       address: "",
       transactionId: "",
       secondary_phone: "",
+      codConfirmation: false,
     },
   });
 
@@ -89,6 +100,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
         form.setValue("transactionId", "");
     } else {
         form.setValue("deliveryLocation", undefined);
+        form.setValue("codConfirmation", false);
     }
   }
 
@@ -291,6 +303,26 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                 </Select>
                                 <FormMessage />
                             </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="codConfirmation"
+                            render={({ field: codField }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
+                                <FormControl>
+                                    <Checkbox
+                                    checked={codField.value}
+                                    onCheckedChange={codField.onChange}
+                                    />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                    I agree to pay with Cash on Delivery.
+                                    </FormLabel>
+                                    <FormMessage />
+                                </div>
+                                </FormItem>
                             )}
                         />
                     </TabsContent>
