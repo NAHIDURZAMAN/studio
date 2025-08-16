@@ -83,7 +83,7 @@ export default function OrdersView() {
       case 'cancelled':
         return 'bg-gray-200/50 hover:bg-gray-200/80 dark:bg-gray-700/30 dark:hover:bg-gray-700/50';
        case 'delivered':
-        return 'bg-teal-100/50 hover:bg-teal-100/80 dark:bg-teal-900/30 dark:hover:bg-teal-900/50';
+        return 'bg-green-100/50 hover:bg-green-100/80 dark:bg-green-900/30 dark:hover:bg-green-900/50';
       default:
         return 'hover:bg-muted/50';
     }
