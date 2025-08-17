@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import type { Product } from "@/types"
 import {
@@ -15,10 +15,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge"
 import { Skeleton } from "../ui/skeleton"
 import Image from "next/image"
+import { Button } from "../ui/button"
+import { ArrowUpDown } from "lucide-react"
 
 export default function ProductsView() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Product | null; direction: 'ascending' | 'descending' }>({ key: null, direction: 'ascending' });
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -44,7 +47,7 @@ export default function ProductsView() {
       .on<Product>(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
-        (payload) => {
+        () => {
            fetchProducts();
         }
       )
@@ -55,6 +58,40 @@ export default function ProductsView() {
     };
 
   }, [fetchProducts])
+
+  const sortedProducts = useMemo(() => {
+    let sortableItems = [...products];
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key!] < b[sortConfig.key!]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key!] > b[sortConfig.key!]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [products, sortConfig]);
+
+  const requestSort = (key: keyof Product) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  }
+
+  const getSortIcon = (key: keyof Product) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortConfig.direction === 'ascending' 
+      ? <ArrowUpDown className="ml-2 h-4 w-4" /> 
+      : <ArrowUpDown className="ml-2 h-4 w-4" />;
+  };
+
 
   if (loading) {
     return (
@@ -96,14 +133,24 @@ export default function ProductsView() {
               <TableRow>
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Color</TableHead>
+                <TableHead>
+                   <Button variant="ghost" onClick={() => requestSort('category')}>
+                    Category
+                    {getSortIcon('category')}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => requestSort('color')}>
+                    Color
+                    {getSortIcon('color')}
+                  </Button>
+                </TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-center">Stock</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => (
+              {sortedProducts.map((product) => (
                 <TableRow 
                   key={product.id} 
                 >

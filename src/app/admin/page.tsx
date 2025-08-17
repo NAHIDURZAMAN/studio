@@ -10,6 +10,7 @@ import Navbar from "@/components/navbar"
 import { Skeleton } from "@/components/ui/skeleton"
 import DownloadOrdersView from "@/components/admin/download-orders-view"
 import ProductsView from "@/components/admin/products-view"
+import StatsCards from "@/components/admin/stats-cards"
 
 const adminEmails = ["nahidurzaman1903@gmail.com", "sakifshahrear@gmail.com"];
 
@@ -36,7 +37,8 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="space-y-4 w-full max-w-md p-8">
+        <div className="space-y-4 w-full max-w-4xl p-8">
+            <Skeleton className="h-24 w-full" />
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-96 w-full" />
         </div>
@@ -53,7 +55,10 @@ export default function AdminPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-24">
         <h1 className="text-3xl font-bold font-headline mb-6">Admin Dashboard</h1>
-        <Tabs defaultValue="orders">
+        
+        <StatsCards />
+
+        <Tabs defaultValue="orders" className="mt-8">
           <TabsList className="grid w-full max-w-lg grid-cols-2 sm:grid-cols-4 h-auto sm:h-10">
             <TabsTrigger value="orders">View Orders</TabsTrigger>
             <TabsTrigger value="add-product">Add Product</TabsTrigger>
