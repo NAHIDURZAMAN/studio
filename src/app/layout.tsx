@@ -1,24 +1,23 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { PT_Sans, Belleza, Alegreya } from 'next/font/google';
-import { Toaster } from '@/components/ui/toaster';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
   weight: ['400', '700'],
-  variable: '--font-pt-sans',
+  className: 'font-sans',
 })
 
 const belleza = Belleza({
   subsets: ['latin'],
   weight: ['400'],
-  variable: '--font-belleza',
+  className: 'font-headline',
 })
 
 const alegreya = Alegreya({
   subsets: ['latin'],
   weight: ['400', '700'],
-  variable: '--font-alegreya',
+  className: 'font-alegreya',
 })
 
 export const metadata: Metadata = {
@@ -32,10 +31,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${ptSans.variable} ${belleza.variable} ${alegreya.variable}`}>
-      <body className="font-sans">
+    <html lang="en" className={`${ptSans.className} ${belleza.className} ${alegreya.className}`}>
+      <body>
         {children}
-        <Toaster />
       </body>
     </html>
   );
