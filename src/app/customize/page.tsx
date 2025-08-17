@@ -40,14 +40,14 @@ const customOrderSchema = z.object({
   email: z.string().email("A valid email address is required."),
   address: z.string().min(10, "Full address is required."),
   size: z.string({ required_error: "Please select a size."}),
-  paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'trust', 'brac'], { required_error: "Please select a payment method." }),
+  paymentMethod: z.enum(['cod', 'prepaid'], { required_error: "Please select a payment method." }),
   deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }),
   transactionId: z.string().optional(),
   paymentConfirmation: z.boolean(),
   frontDesign: z.any().refine(file => file?.length === 1, 'A front design is required.'),
   backDesign: z.any().optional(),
 }).refine(data => {
-  if (data.paymentMethod !== 'cod' && (!data.transactionId || data.transactionId.trim().length < 5)) {
+  if (data.paymentMethod === 'prepaid' && (!data.transactionId || data.transactionId.trim().length < 5)) {
     return false;
   }
   return true;
@@ -469,4 +469,5 @@ export default function CustomizePage() {
       </main>
     </div>
   )
-}
+
+    
