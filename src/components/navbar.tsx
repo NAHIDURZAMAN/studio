@@ -66,7 +66,7 @@ export default function Navbar() {
             alt="X Style Logo"
             width={40}
             height={40}
-            className="h-10 w-auto rounded-full"
+            className="h-10 w-10 rounded-full object-cover"
             data-ai-hint="logo"
           />
           <span className="font-headline text-2xl font-bold text-primary">
@@ -75,7 +75,7 @@ export default function Navbar() {
         </Link>
         <nav className="hidden md:flex items-center gap-2">
           <Button variant="ghost" asChild>
-            <Link href="#">New Arrivals</Link>
+            <Link href="/?new_arrivals=true">New Arrivals</Link>
           </Button>
           <Button variant="ghost" asChild>
             <Link href="#">Collections</Link>
@@ -135,7 +135,7 @@ export default function Navbar() {
                 <SheetTitle className="font-headline text-2xl">Menu</SheetTitle>
               </SheetHeader>
                 <div className="flex flex-col gap-4 p-4">
-                    <Link href="#" className="text-lg font-medium">New Arrivals</Link>
+                    <Link href="/?new_arrivals=true" className="text-lg font-medium">New Arrivals</Link>
                     <Link href="#" className="text-lg font-medium">Collections</Link>
                     <Link href="#" className="text-lg font-medium">Contact</Link>
                     {/*

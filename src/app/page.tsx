@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useMemo, useState, useEffect, useCallback } from "react"
+import { useSearchParams } from "next/navigation"
 import type { Product, Filters } from "@/types"
 import Navbar from "@/components/navbar"
 import ProductFilters from "@/components/product-filters"
@@ -22,7 +23,10 @@ const priceRanges = {
 
 const PRODUCTS_PER_PAGE = 20;
 
-export default function Home() {
+function HomePageContent() {
+  const searchParams = useSearchParams();
+  const isNewArrivals = searchParams.get('new_arrivals') === 'true';
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>({
@@ -35,7 +39,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
 
-  const fetchProducts = useCallback(async (page: number, currentFilters: Filters, currentSearchTerm: string) => {
+  const fetchProducts = useCallback(async (page: number, currentFilters: Filters, currentSearchTerm: string, newArrivals: boolean) => {
     setLoading(true);
     const from = (page - 1) * PRODUCTS_PER_PAGE;
     const to = from + PRODUCTS_PER_PAGE - 1;
@@ -53,10 +57,13 @@ export default function Home() {
     if (currentFilters.colors.length > 0) {
       query = query.in('color', currentFilters.colors);
     }
-    if (currentFilters.priceRange !== 'all') {
-      const priceFilter = priceRanges[currentFilters.priceRange as keyof typeof priceRanges];
-      // This is tricky with client-side functions. We will filter post-fetch for price for now
+    if (newArrivals) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      query = query.gte('created_at', thirtyDaysAgo.toISOString());
     }
+    
+    // Price range filter is applied client-side after fetch
 
     query = query.order('created_at', { ascending: false }).range(from, to);
 
@@ -80,7 +87,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetchProducts(currentPage, filters, searchTerm);
+    fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
 
     const channel = supabase
       .channel('products-changes')
@@ -88,7 +95,7 @@ export default function Home() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
         (payload) => {
-          fetchProducts(currentPage, filters, searchTerm); // Refetch current page on any change
+          fetchProducts(currentPage, filters, searchTerm, isNewArrivals); // Refetch current page on any change
         }
       )
       .subscribe();
@@ -96,7 +103,7 @@ export default function Home() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentPage, filters, searchTerm, fetchProducts]);
+  }, [currentPage, filters, searchTerm, isNewArrivals, fetchProducts]);
 
   const handleFilterChange = (newFilters: Filters) => {
     setCurrentPage(1);
@@ -121,10 +128,13 @@ export default function Home() {
         <div className="container mx-auto px-4 py-8">
            <div className="text-center mb-12">
              <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-foreground">
-               Your Style, Your Way.
+               {isNewArrivals ? "New Arrivals" : "Your Style, Your Way."}
              </h1>
              <p className="mt-4 text-lg font-alegreya text-muted-foreground max-w-2xl mx-auto">
-               From the streets of Mirpur to every corner of Bangladesh, X Style delivers the freshest urban fashion.
+               {isNewArrivals 
+                ? "Check out the latest styles added in the last 30 days."
+                : "From the streets of Mirpur to every corner of Bangladesh, X Style delivers the freshest urban fashion."
+               }
              </p>
            </div>
           
@@ -185,6 +195,15 @@ export default function Home() {
     </div>
   );
 }
+
+export default function Home() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <HomePageContent />
+    </React.Suspense>
+  )
+}
+
 
 function CardSkeleton() {
   return (
