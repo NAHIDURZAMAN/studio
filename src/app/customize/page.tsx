@@ -351,17 +351,13 @@ export default function CustomizePage() {
                               className="grid grid-cols-2 gap-4"
                             >
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
                                   <RadioGroupItem value="cod" id="cod" />
-                                </FormControl>
                                 <FormLabel htmlFor="cod" className="font-normal">
                                   Cash on Delivery
                                 </FormLabel>
                               </FormItem>
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
                                   <RadioGroupItem value="prepaid" id="prepaid" />
-                                </FormControl>
                                 <FormLabel htmlFor="prepaid" className="font-normal">
                                   Pre-paid (bKash/Nagad/etc.)
                                 </FormLabel>
@@ -461,6 +457,8 @@ export default function CustomizePage() {
   )
 
 }
+    
+
     
 
     
