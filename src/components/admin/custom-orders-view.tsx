@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
@@ -15,14 +16,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge"
 import { format } from 'date-fns'
 import { Skeleton } from "../ui/skeleton"
-import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { Button } from "../ui/button"
-import { Download, CheckCircle, PackagePlus } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 export default function CustomOrdersView() {
   const [orders, setOrders] = useState<CustomOrder[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedOrder, setSelectedOrder] = useState<CustomOrder | null>(null)
+  const { toast } = useToast()
 
   const fetchCustomOrders = useCallback(async () => {
     setLoading(true);
@@ -48,8 +61,16 @@ export default function CustomOrdersView() {
       .on<CustomOrder>(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'custom_orders' },
-        () => {
-           fetchCustomOrders();
+        (payload) => {
+          if (payload.eventType === 'UPDATE') {
+            setOrders(currentOrders =>
+              currentOrders.map(order =>
+                order.id === payload.new.id ? { ...order, ...(payload.new as CustomOrder) } : order
+              )
+            );
+          } else {
+            fetchCustomOrders();
+          }
         }
       )
       .subscribe();
@@ -57,16 +78,26 @@ export default function CustomOrdersView() {
     return () => {
       supabase.removeChannel(channel);
     };
-
   }, [fetchCustomOrders])
 
-  const handlePromoteToProduct = (order: CustomOrder) => {
-    // This will later navigate to the Add Product page with pre-filled data
-    console.log("Promoting order to product:", order.id)
-    toast({
-        title: "Feature Coming Soon!",
-        description: "This will open the 'Add Product' form with the design pre-loaded.",
-    });
+  const handleStatusChange = async (orderId: number, newStatus: CustomOrder['status']) => {
+      const { error } = await supabase
+        .from('custom_orders')
+        .update({ status: newStatus })
+        .eq('id', orderId)
+
+      if (error) {
+          toast({
+              title: "Error updating status",
+              description: error.message,
+              variant: "destructive"
+          })
+      } else {
+          toast({
+              title: "Status Updated!",
+              description: `Order status changed to ${newStatus}.`
+          })
+      }
   }
 
   if (loading) {
@@ -109,45 +140,29 @@ export default function CustomOrdersView() {
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Designs</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>Design Count</TableHead>
                 <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>{format(new Date(order.created_at), 'PP')}</TableCell>
+                <TableRow 
+                    key={order.id} 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => setSelectedOrder(order)}
+                >
+                  <TableCell>{format(new Date(order.created_at), 'PPp')}</TableCell>
                   <TableCell>
                       <div className="font-medium">{order.customer_name}</div>
                       <div>{order.customer_phone}</div>
                   </TableCell>
+                  <TableCell>{order.customer_address}</TableCell>
                   <TableCell>
-                      <div className="flex items-center gap-2">
-                         <a href={order.front_design_url} target="_blank" rel="noopener noreferrer">
-                            <Image src={order.front_design_url} alt="Front Design" width={40} height={40} className="rounded-md object-cover border"/>
-                         </a>
-                         {order.back_design_url && (
-                             <a href={order.back_design_url} target="_blank" rel="noopener noreferrer">
-                                <Image src={order.back_design_url} alt="Back Design" width={40} height={40} className="rounded-md object-cover border"/>
-                            </a>
-                         )}
-                      </div>
+                    <Badge variant="outline">{order.designs.length} Design(s)</Badge>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{order.size}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">৳{order.total_price.toLocaleString()}</TableCell>
                   <TableCell className="text-center">
                     <Badge>{order.status}</Badge>
-                  </TableCell>
-                   <TableCell className="text-right">
-                    <Button variant="outline" size="sm" onClick={() => handlePromoteToProduct(order)}>
-                        <PackagePlus className="mr-2 h-4 w-4"/>
-                        Add to Products
-                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -155,12 +170,61 @@ export default function CustomOrdersView() {
           </Table>
         </CardContent>
       </Card>
+      {selectedOrder && (
+         <Dialog open={!!selectedOrder} onOpenChange={(isOpen) => !isOpen && setSelectedOrder(null)}>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>Order from {selectedOrder.customer_name}</DialogTitle>
+                    <DialogDescription>
+                        {selectedOrder.customer_phone} | Submitted on {format(new Date(selectedOrder.created_at), 'PPp')}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="flex justify-between items-center">
+                        <h4 className="font-semibold">Status</h4>
+                         <Select
+                            defaultValue={selectedOrder.status}
+                            onValueChange={(newStatus) => handleStatusChange(selectedOrder.id, newStatus as CustomOrder['status'])}
+                         >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Change status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="pending_review">Pending Review</SelectItem>
+                                <SelectItem value="approved">Approved</SelectItem>
+                                <SelectItem value="in_production">In Production</SelectItem>
+                                <SelectItem value="shipped">Shipped</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Accordion type="single" collapsible className="w-full">
+                    {selectedOrder.designs.map((design, index) => (
+                        <AccordionItem value={`item-${index}`} key={index}>
+                            <AccordionTrigger>Design {index + 1}</AccordionTrigger>
+                            <AccordionContent>
+                               <div className="flex flex-col md:flex-row gap-4 items-start">
+                                 <a href={design.design_url} target="_blank" rel="noopener noreferrer" className="w-full md:w-1/3">
+                                    <Image src={design.design_url} alt={`Design ${index+1}`} width={150} height={150} className="rounded-md object-cover border w-full aspect-square" />
+                                 </a>
+                                 <div className="w-full md:w-2/3">
+                                     <h5 className="font-semibold mb-2">Instructions:</h5>
+                                     <p className="text-sm text-muted-foreground bg-secondary p-3 rounded-md whitespace-pre-wrap">
+                                        {design.instructions || "No instructions provided."}
+                                     </p>
+                                 </div>
+                               </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                    </Accordion>
+                </div>
+                 <DialogFooter>
+                    <Button variant="outline" onClick={() => setSelectedOrder(null)}>Close</Button>
+                </DialogFooter>
+            </DialogContent>
+         </Dialog>
+      )}
     </>
   )
-}
-
-// Temporary toast function placeholder to avoid breaking the component
-// In a real scenario, you'd import this from your hooks
-const toast = (options: {title: string, description: string}) => {
-    console.log(`Toast: ${options.title} - ${options.description}`);
 }
