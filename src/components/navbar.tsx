@@ -62,7 +62,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="https://placehold.co/40x40.png"
+            src="https://scontent.fdac179-1.fna.fbcdn.net/v/t39.30808-6/491689361_2080392212456783_6779875994807281819_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=9oLU2biu0qkQ7kNvwHyfvPK&_nc_oc=AdkK1UzORJfJoyycZQAvfMB5LwnCk1EtHYQQClsygPJZx-TaXwYR4OS_C7HohiqLL5s&_nc_zt=23&_nc_ht=scontent.fdac179-1.fna&_nc_gid=w-lm2cE3njoKf4FJyabnsg&oh=00_AfWFnx645RUOILC_Cj3JHpsM9gafjvENMmfgARna3aGYVg&oe=68A7273E"
             alt="X Style Logo"
             width={40}
             height={40}

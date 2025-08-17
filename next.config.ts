@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
         hostname: 'cyuiubrffpzmgstjcopm.supabase.co',
         port: '',
         pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'scontent.fdac179-1.fna.fbcdn.net',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
