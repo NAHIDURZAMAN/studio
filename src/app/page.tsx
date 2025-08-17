@@ -25,7 +25,7 @@ const PRODUCTS_PER_PAGE = 20;
 
 function HomePageContent() {
   const searchParams = useSearchParams();
-  const isNewArrivals = searchParams.get('new_arrivals') === 'true';
+  const [isNewArrivals, setIsNewArrivals] = useState(false);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +38,11 @@ function HomePageContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
+
+  useEffect(() => {
+    // This runs only on the client, after hydration
+    setIsNewArrivals(searchParams.get('new_arrivals') === 'true');
+  }, [searchParams]);
 
   const fetchProducts = useCallback(async (page: number, currentFilters: Filters, currentSearchTerm: string, newArrivals: boolean) => {
     setLoading(true);
@@ -63,8 +68,6 @@ function HomePageContent() {
       query = query.gte('created_at', thirtyDaysAgo.toISOString());
     }
     
-    // Price range filter is applied client-side after fetch
-
     query = query.order('created_at', { ascending: false }).range(from, to);
 
     const { data, error, count } = await query;
@@ -74,7 +77,7 @@ function HomePageContent() {
       setProducts([]);
     } else {
       let filteredData = data as Product[];
-      // Apply price filter client-side
+      // Apply price filter client-side as it is not part of the query
       if (currentFilters.priceRange !== 'all') {
           const priceFilterFunc = priceRanges[currentFilters.priceRange as keyof typeof priceRanges];
           filteredData = filteredData.filter(p => priceFilterFunc(p.price));
@@ -94,8 +97,8 @@ function HomePageContent() {
       .on<Product>(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
-        (payload) => {
-          fetchProducts(currentPage, filters, searchTerm, isNewArrivals); // Refetch current page on any change
+        () => {
+          fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
         }
       )
       .subscribe();
@@ -143,7 +146,7 @@ function HomePageContent() {
             onSearchChange={handleSearchChange} 
             currentFilters={filters}
             searchTerm={searchTerm}
-            searchSuggestions={[]} // Suggestions might need rethink with pagination
+            searchSuggestions={[]}
           />
 
           <section className="mt-8">
