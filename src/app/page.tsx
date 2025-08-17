@@ -198,7 +198,7 @@ function HomePageContent() {
 
 export default function Home() {
   return (
-    <React.Suspense fallback={<div>Loading...</div>}>
+    <React.Suspense fallback={<HomePageSkeleton />}>
       <HomePageContent />
     </React.Suspense>
   )
@@ -213,6 +213,38 @@ function CardSkeleton() {
         <Skeleton className="h-4 w-[200px]" />
         <Skeleton className="h-4 w-[150px]" />
       </div>
+    </div>
+  )
+}
+
+function HomePageSkeleton() {
+  return (
+     <div className="flex flex-col min-h-screen bg-background">
+      <Navbar />
+       <main className="flex-grow pt-16">
+        <div className="container mx-auto px-4 py-8">
+           <div className="text-center mb-12">
+             <Skeleton className="h-12 w-3/4 mx-auto" />
+             <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
+           </div>
+            <div className="bg-secondary/50 p-4 rounded-lg">
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full md:w-40" />
+                    <Skeleton className="h-10 w-full md:w-40" />
+                    <Skeleton className="h-10 w-full md:w-40" />
+                </div>
+            </div>
+           <section className="mt-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <CardSkeleton key={i} />
+                ))}
+              </div>
+          </section>
+        </div>
+        <Footer />
+      </main>
     </div>
   )
 }
