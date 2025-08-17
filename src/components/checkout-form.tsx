@@ -453,7 +453,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
         />
         
 
-        <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+        <div className="bg-muted/50 p-4 rounded-lg space-y-2 mt-6">
             <div className="flex justify-between text-sm">
                 <span>Subtotal</span>
                 <span>৳ {subtotal.toLocaleString()}</span>

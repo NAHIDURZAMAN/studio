@@ -53,7 +53,7 @@ export default function AdminPage() {
       <main className="container mx-auto px-4 py-24">
         <h1 className="text-3xl font-bold font-headline mb-6">Admin Dashboard</h1>
         <Tabs defaultValue="orders">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-md grid-cols-2 sm:grid-cols-3 h-auto sm:h-10">
             <TabsTrigger value="orders">View Orders</TabsTrigger>
             <TabsTrigger value="add-product">Add Product</TabsTrigger>
             <TabsTrigger value="order-history">Order History</TabsTrigger>

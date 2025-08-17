@@ -79,8 +79,8 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
 
   return (
     <div className="bg-secondary/50 p-4 rounded-lg">
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative w-full md:w-auto md:flex-grow lg:flex-grow-0 lg:w-64" ref={searchRef}>
+      <div className="flex flex-col md:flex-row items-center gap-4">
+        <div className="relative w-full md:flex-grow" ref={searchRef}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
                 placeholder="Search products..."
@@ -106,8 +106,8 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
             )}
         </div>
 
-        <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex-shrink-0 w-36">
+        <div className="flex w-full md:w-auto items-center gap-4 flex-wrap md:flex-nowrap">
+            <div className="flex-grow w-full sm:w-auto">
               <Select onValueChange={handleCategoryChange} value={activeCategory}>
                   <SelectTrigger>
                       <SelectValue placeholder="Category" />
@@ -120,7 +120,7 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
               </Select>
             </div>
 
-            <div className="flex-shrink-0 w-36">
+            <div className="flex-grow w-full sm:w-auto">
               <Select onValueChange={handleColorChange} value={currentFilters.colors[0] || 'All'}>
                   <SelectTrigger>
                       <SelectValue placeholder="Color" />
@@ -133,7 +133,7 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
               </Select>
             </div>
             
-            <div className="flex-shrink-0 w-40">
+            <div className="flex-grow w-full sm:w-auto">
               <Select onValueChange={handlePriceChange} value={currentFilters.priceRange}>
                   <SelectTrigger>
                       <SelectValue placeholder="Price" />
@@ -148,7 +148,7 @@ export default function ProductFilters({ onFilterChange, onSearchChange, current
         </div>
 
         {hasActiveFilters && (
-            <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-foreground w-full md:w-auto">
               <X className="mr-2 h-4 w-4" />
               Clear
             </Button>
