@@ -186,39 +186,39 @@ export default function CustomizePage() {
                                     <FormField
                                         control={form.control}
                                         name={`designs.${index}.file`}
-                                        render={({ field: { onChange, ...rest } }) => (
+                                        render={({ field: { onChange, value, ...rest } }) => (
                                             <FormItem>
-                                            <FormLabel>Upload Design {index + 1}</FormLabel>
-                                            <div className="relative">
-                                                 <label 
-                                                     htmlFor={`design-upload-${index}`} 
-                                                     className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-muted"
-                                                 >
-                                                     {design.file && design.file.length > 0 ? (
-                                                         <Image src={URL.createObjectURL(design.file[0])} alt={`Design ${index + 1} preview`} layout="fill" className="object-contain rounded-lg p-2" />
-                                                     ) : (
-                                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                             <FileUp className="w-8 h-8 mb-4 text-muted-foreground" />
-                                                             <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p>
-                                                             <p className="text-xs text-muted-foreground">PNG, JPG, GIF</p>
-                                                         </div>
-                                                     )}
-                                                 </label>
-                                                 <FormControl>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="sr-only"
-                                                        id={`design-upload-${index}`}
-                                                        onChange={(e) => {
-                                                            onChange(e.target.files);
-                                                            handleDesignChange(index, e.target.files);
-                                                        }}
-                                                        {...rest}
-                                                    />
-                                                </FormControl>
-                                             </div>
-                                            <FormMessage />
+                                                <FormLabel>Upload Design {index + 1}</FormLabel>
+                                                <div className="relative">
+                                                     <label 
+                                                         htmlFor={`design-upload-${index}`} 
+                                                         className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-muted"
+                                                     >
+                                                         {design.file && design.file.length > 0 ? (
+                                                             <Image src={URL.createObjectURL(design.file[0])} alt={`Design ${index + 1} preview`} fill className="object-contain rounded-lg p-2" />
+                                                         ) : (
+                                                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                                 <FileUp className="w-8 h-8 mb-4 text-muted-foreground" />
+                                                                 <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p>
+                                                                 <p className="text-xs text-muted-foreground">PNG, JPG, GIF</p>
+                                                             </div>
+                                                         )}
+                                                     </label>
+                                                     <FormControl>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="sr-only"
+                                                            id={`design-upload-${index}`}
+                                                            onChange={(e) => {
+                                                                onChange(e.target.files);
+                                                                handleDesignChange(index, e.target.files);
+                                                            }}
+                                                            {...rest}
+                                                        />
+                                                    </FormControl>
+                                                 </div>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                         />
@@ -286,6 +286,4 @@ export default function CustomizePage() {
   )
 
 }
-    
-
     
