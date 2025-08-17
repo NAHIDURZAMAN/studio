@@ -25,6 +25,7 @@ const PRODUCTS_PER_PAGE = 20;
 
 function HomePageContent() {
   const searchParams = useSearchParams();
+  const [isClient, setIsClient] = useState(false);
   const [isNewArrivals, setIsNewArrivals] = useState(false);
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -40,7 +41,7 @@ function HomePageContent() {
   const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
-    // This runs only on the client, after hydration
+    setIsClient(true);
     setIsNewArrivals(searchParams.get('new_arrivals') === 'true');
   }, [searchParams]);
 
@@ -90,23 +91,25 @@ function HomePageContent() {
   }, []);
 
   useEffect(() => {
-    fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
+    if (isClient) {
+      fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
 
-    const channel = supabase
-      .channel('products-changes')
-      .on<Product>(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'products' },
-        () => {
-          fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
-        }
-      )
-      .subscribe();
+      const channel = supabase
+        .channel('products-changes')
+        .on<Product>(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'products' },
+          () => {
+            fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
+          }
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [currentPage, filters, searchTerm, isNewArrivals, fetchProducts]);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [currentPage, filters, searchTerm, isNewArrivals, fetchProducts, isClient]);
 
   const handleFilterChange = (newFilters: Filters) => {
     setCurrentPage(1);
@@ -130,15 +133,24 @@ function HomePageContent() {
       <main className="flex-grow pt-16">
         <div className="container mx-auto px-4 py-8">
            <div className="text-center mb-12">
-             <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-foreground">
-               {isNewArrivals ? "New Arrivals" : "Your Style, Your Way."}
-             </h1>
-             <p className="mt-4 text-lg font-alegreya text-muted-foreground max-w-2xl mx-auto">
-               {isNewArrivals 
-                ? "Check out the latest styles added in the last 30 days."
-                : "From the streets of Mirpur to every corner of Bangladesh, X Style delivers the freshest urban fashion."
-               }
-             </p>
+             {isClient ? (
+                <>
+                    <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-foreground">
+                        {isNewArrivals ? "New Arrivals" : "Your Style, Your Way."}
+                    </h1>
+                    <p className="mt-4 text-lg font-alegreya text-muted-foreground max-w-2xl mx-auto">
+                        {isNewArrivals
+                            ? "Check out the latest styles added in the last 30 days."
+                            : "From the streets of Mirpur to every corner of Bangladesh, X Style delivers the freshest urban fashion."
+                        }
+                    </p>
+                </>
+             ) : (
+                <>
+                    <Skeleton className="h-12 w-3/4 mx-auto" />
+                    <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
+                </>
+             )}
            </div>
           
           <ProductFilters 
