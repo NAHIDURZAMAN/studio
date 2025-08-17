@@ -33,10 +33,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${ptSans.variable} ${belleza.variable} ${alegreya.variable}`}>
-      <body className="min-h-screen flex flex-col">
-        <div className="flex-grow">
-          {children}
-        </div>
+      <body>
+        {children}
         <Toaster />
       </body>
     </html>

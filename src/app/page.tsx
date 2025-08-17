@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useMemo, useState, useEffect, useCallback } from "react"
+import { useMemo, useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import type { Product, Filters } from "@/types"
 import Navbar from "@/components/navbar"
@@ -196,15 +196,6 @@ function HomePageContent() {
   );
 }
 
-export default function Home() {
-  return (
-    <React.Suspense fallback={<HomePageSkeleton />}>
-      <HomePageContent />
-    </React.Suspense>
-  )
-}
-
-
 function CardSkeleton() {
   return (
     <div className="flex flex-col space-y-3">
@@ -246,5 +237,13 @@ function HomePageSkeleton() {
         <Footer />
       </main>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<HomePageSkeleton />}>
+      <HomePageContent />
+    </Suspense>
   )
 }
