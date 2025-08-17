@@ -10,10 +10,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['var(--font-pt-sans)'],
+        sans: ['var(--font-pt-sans)'],
         headline: ['var(--font-belleza)'],
         alegreya: ['var(--font-alegreya)'],
-        code: ['monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
