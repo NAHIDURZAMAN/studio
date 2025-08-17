@@ -73,8 +73,8 @@ const BASE_PRICE = 250;
 export default function CustomizePage() {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
-  const [promotedProducts, setPromotedProducts = useState<Product[]>([]);
-  const [loadingPromoted, setLoadingPromoted = useState(true);
+  const [promotedProducts, setPromotedProducts] = useState<Product[]>([]);
+  const [loadingPromoted, setLoadingPromoted] = useState(true);
 
   const form = useForm<z.infer<typeof customOrderSchema>>({
     resolver: zodResolver(customOrderSchema),
@@ -459,5 +459,8 @@ export default function CustomizePage() {
       </main>
     </div>
   )
+
+}
+    
 
     
