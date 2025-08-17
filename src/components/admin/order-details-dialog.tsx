@@ -124,9 +124,9 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
                 </div>
                  <div className="flex items-start gap-3">
                     <Phone className="w-4 h-4 mt-1 text-muted-foreground" />
-                    <div>
-                      <p>{order.customer_phone} <Badge variant="outline" className="text-xs">WhatsApp</Badge></p>
-                      {order.secondary_phone && <p>{order.secondary_phone} <Badge variant="outline" className="text-xs">Secondary</Badge></p>}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">{order.customer_phone} <Badge variant="outline" className="text-xs">WhatsApp</Badge></div>
+                      {order.secondary_phone && <div className="flex items-center gap-2">{order.secondary_phone} <Badge variant="outline" className="text-xs">Secondary</Badge></div>}
                     </div>
                 </div>
                 <div className="flex items-start gap-3">
