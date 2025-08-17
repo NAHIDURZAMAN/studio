@@ -351,15 +351,15 @@ export default function CustomizePage() {
                             >
                               <div className="flex items-center space-x-3 space-y-0">
                                 <RadioGroupItem value="cod" id="cod" />
-                                <FormLabel htmlFor="cod" className="font-normal">
+                                <Label htmlFor="cod" className="font-normal">
                                   Cash on Delivery
-                                </FormLabel>
+                                </Label>
                               </div>
                               <div className="flex items-center space-x-3 space-y-0">
                                 <RadioGroupItem value="prepaid" id="prepaid" />
-                                <FormLabel htmlFor="prepaid" className="font-normal">
+                                <Label htmlFor="prepaid" className="font-normal">
                                   Pre-paid (bKash/Nagad/etc.)
-                                </FormLabel>
+                                </Label>
                               </div>
                             </RadioGroup>
                           </FormControl>
@@ -455,3 +455,5 @@ export default function CustomizePage() {
     </div>
   )
 }
+
+    
