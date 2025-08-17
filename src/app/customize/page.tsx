@@ -338,32 +338,38 @@ export default function CustomizePage() {
                     />
 
                     <FormField
-                        control={form.control}
-                        name="paymentMethod"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Payment Method</FormLabel>
-                                <RadioGroup
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                    className="grid grid-cols-2 gap-4"
-                                >
-                                    <FormItem className="flex items-center space-x-3 space-y-0 p-4 border rounded-md has-[:checked]:border-primary">
-                                        <FormControl>
-                                            <RadioGroupItem value="cod" />
-                                        </FormControl>
-                                        <FormLabel className="font-normal">Cash on Delivery</FormLabel>
-                                    </FormItem>
-                                    <FormItem className="flex items-center space-x-3 space-y-0 p-4 border rounded-md has-[:checked]:border-primary">
-                                        <FormControl>
-                                            <RadioGroupItem value="prepaid" />
-                                        </FormControl>
-                                        <FormLabel className="font-normal">Pre-paid (bKash/Nagad/etc.)</FormLabel>
-                                    </FormItem>
-                                </RadioGroup>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                      control={form.control}
+                      name="paymentMethod"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel>Payment Method</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="grid grid-cols-2 gap-4"
+                            >
+                              <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value="cod" />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  Cash on Delivery
+                                </FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value="prepaid" />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  Pre-paid (bKash/Nagad/etc.)
+                                </FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                     
                     {paymentMethod === 'prepaid' && (
@@ -453,3 +459,5 @@ export default function CustomizePage() {
     </div>
   )
 }
+
+    
