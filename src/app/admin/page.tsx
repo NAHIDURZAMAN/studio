@@ -1,57 +1,17 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import OrdersView from "@/components/admin/orders-view"
+import AdminAuthGuard from "@/components/admin/admin-auth-guard"
 import AddProductForm from "@/components/admin/add-product-form"
-import Navbar from "@/components/navbar"
-import { Skeleton } from "@/components/ui/skeleton"
 import DownloadOrdersView from "@/components/admin/download-orders-view"
+import OrdersView from "@/components/admin/orders-view"
 import ProductsView from "@/components/admin/products-view"
 import StatsCards from "@/components/admin/stats-cards"
-
-const adminEmails = ["nahidurzaman1903@gmail.com", "sakifshahrear@gmail.com"];
+import Navbar from "@/components/navbar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function AdminPage() {
-  const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user && adminEmails.includes(session.user.email ?? '')) {
-        setIsAdmin(true);
-      } else {
-        router.push('/admin/login');
-      }
-      setLoading(false);
-    };
-
-    checkUser();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="space-y-4 w-full max-w-4xl p-8">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-96 w-full" />
-        </div>
-      </div>
-    )
-  }
-
-  if (!isAdmin) {
-    return null; // or a redirect component
-  }
-
   return (
-    <>
+    <AdminAuthGuard>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
         <h1 className="text-3xl font-bold font-headline mb-6">Admin Dashboard</h1>
@@ -59,7 +19,7 @@ export default function AdminPage() {
         <StatsCards />
 
         <Tabs defaultValue="orders" className="mt-8">
-          <TabsList className="grid w-full max-w-lg grid-cols-2 sm:grid-cols-4 h-auto sm:h-10">
+          <TabsList className="grid w-full max-w-lg grid-cols-2 md:grid-cols-4 h-auto">
             <TabsTrigger value="orders">View Orders</TabsTrigger>
             <TabsTrigger value="add-product">Add Product</TabsTrigger>
             <TabsTrigger value="view-products">View Products</TabsTrigger>
@@ -79,6 +39,6 @@ export default function AdminPage() {
           </TabsContent>
         </Tabs>
       </main>
-    </>
+    </AdminAuthGuard>
   )
 }
