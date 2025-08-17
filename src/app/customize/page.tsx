@@ -67,8 +67,6 @@ const customOrderSchema = z.object({
 
 const sizes = ["S", "M", "L", "XL", "XXL", "XXXL"];
 const BASE_PRICE = 250;
-const ONE_SIDE_DESIGN_PRICE = 100;
-const TWO_SIDE_DESIGN_PRICE = 150;
 
 
 export default function CustomizePage() {
@@ -95,25 +93,12 @@ export default function CustomizePage() {
   const backDesignFile = form.watch("backDesign");
 
   const price = useMemo(() => {
-    let total = BASE_PRICE;
-    if (frontDesignFile && frontDesignFile.length > 0) {
-      total += ONE_SIDE_DESIGN_PRICE;
-    }
-    if (backDesignFile && backDesignFile.length > 0) {
-      total += (TWO_SIDE_DESIGN_PRICE - ONE_SIDE_DESIGN_PRICE); // Add the difference for the second side
-    } else if (frontDesignFile && frontDesignFile.length > 0) {
-        // This case is for one-sided design price.
-        // Base is 250, one side makes it 350.
-        // The logic is a bit convoluted. Let's simplify.
-    }
-    
-    // Simplified price logic
     const hasFront = frontDesignFile && frontDesignFile.length > 0;
     const hasBack = backDesignFile && backDesignFile.length > 0;
 
     if (hasFront && hasBack) return 400;
     if (hasFront) return 350;
-    return 250; // Base price if no design uploaded yet.
+    return BASE_PRICE; 
 
   }, [frontDesignFile, backDesignFile]);
 
@@ -358,26 +343,24 @@ export default function CustomizePage() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Payment Method</FormLabel>
-                                <FormControl>
-                                     <RadioGroup
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                        className="grid grid-cols-2 gap-4"
-                                    >
-                                        <FormItem className="flex items-center space-x-3 space-y-0 p-4 border rounded-md has-[:checked]:border-primary">
-                                            <FormControl>
-                                                <RadioGroupItem value="cod" />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">Cash on Delivery</FormLabel>
-                                        </FormItem>
-                                        <FormItem className="flex items-center space-x-3 space-y-0 p-4 border rounded-md has-[:checked]:border-primary">
-                                             <FormControl>
-                                                <RadioGroupItem value="prepaid" />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">Pre-paid (bKash/Nagad/etc.)</FormLabel>
-                                        </FormItem>
-                                    </RadioGroup>
-                                </FormControl>
+                                <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    className="grid grid-cols-2 gap-4"
+                                >
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-4 border rounded-md has-[:checked]:border-primary">
+                                        <FormControl>
+                                            <RadioGroupItem value="cod" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">Cash on Delivery</FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-4 border rounded-md has-[:checked]:border-primary">
+                                        <FormControl>
+                                            <RadioGroupItem value="prepaid" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">Pre-paid (bKash/Nagad/etc.)</FormLabel>
+                                    </FormItem>
+                                </RadioGroup>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -469,5 +452,4 @@ export default function CustomizePage() {
       </main>
     </div>
   )
-
-    
+}

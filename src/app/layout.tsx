@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${ptSans.variable} ${belleza.variable} ${alegreya.variable}`}>
-      <body>
+      <body className="antialiased">
         {children}
         <Toaster />
       </body>

@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useMemo, useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import type { Product, Filters } from "@/types"
 import Navbar from "@/components/navbar"
@@ -13,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { supabase } from "@/lib/supabase"
 import { Skeleton } from "@/components/ui/skeleton"
 import PaginationControls from "@/components/pagination-controls"
+import { Suspense } from "react"
 
 const priceRanges = {
   'under-1000': (price: number) => price < 1000,
@@ -25,27 +25,27 @@ const PRODUCTS_PER_PAGE = 20;
 
 function HomePageContent() {
   const searchParams = useSearchParams();
-  const [isClient, setIsClient] = useState(false);
-  const [isNewArrivals, setIsNewArrivals] = useState(false);
+  const [isClient, setIsClient] = React.useState(false);
+  
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<Filters>({
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [filters, setFilters] = React.useState<Filters>({
     categories: [],
     colors: [],
     priceRange: 'all',
   });
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(0);
+  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [totalProducts, setTotalProducts] = React.useState(0);
 
-  useEffect(() => {
-    setIsClient(true);
-    setIsNewArrivals(searchParams.get('new_arrivals') === 'true');
-  }, [searchParams]);
+  const isNewArrivals = searchParams.get('new_arrivals') === 'true';
 
-  const fetchProducts = useCallback(async (page: number, currentFilters: Filters, currentSearchTerm: string, newArrivals: boolean) => {
+  const fetchProducts = React.useCallback(async (page: number, currentFilters: Filters, currentSearchTerm: string, newArrivals: boolean) => {
     setLoading(true);
     const from = (page - 1) * PRODUCTS_PER_PAGE;
     const to = from + PRODUCTS_PER_PAGE - 1;
@@ -90,26 +90,24 @@ function HomePageContent() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (isClient) {
-      fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
+  React.useEffect(() => {
+    fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
 
-      const channel = supabase
-        .channel('products-changes')
-        .on<Product>(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'products' },
-          () => {
-            fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
-          }
-        )
-        .subscribe();
+    const channel = supabase
+      .channel('products-changes')
+      .on<Product>(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          fetchProducts(currentPage, filters, searchTerm, isNewArrivals);
+        }
+      )
+      .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [currentPage, filters, searchTerm, isNewArrivals, fetchProducts, isClient]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentPage, filters, searchTerm, isNewArrivals, fetchProducts]);
 
   const handleFilterChange = (newFilters: Filters) => {
     setCurrentPage(1);
