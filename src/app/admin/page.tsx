@@ -8,6 +8,7 @@ import ProductsView from "@/components/admin/products-view"
 import StatsCards from "@/components/admin/stats-cards"
 import Navbar from "@/components/navbar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import CustomOrdersView from "@/components/admin/custom-orders-view"
 
 export default function AdminPage() {
   return (
@@ -19,14 +20,18 @@ export default function AdminPage() {
         <StatsCards />
 
         <Tabs defaultValue="orders" className="mt-8">
-          <TabsList className="grid w-full max-w-lg grid-cols-2 md:grid-cols-4 h-auto">
+          <TabsList className="grid w-full max-w-xl grid-cols-2 md:grid-cols-5 h-auto">
             <TabsTrigger value="orders">View Orders</TabsTrigger>
+            <TabsTrigger value="custom-orders">Custom Orders</TabsTrigger>
             <TabsTrigger value="add-product">Add Product</TabsTrigger>
             <TabsTrigger value="view-products">View Products</TabsTrigger>
             <TabsTrigger value="order-history">Order History</TabsTrigger>
           </TabsList>
           <TabsContent value="orders">
             <OrdersView />
+          </TabsContent>
+          <TabsContent value="custom-orders">
+            <CustomOrdersView />
           </TabsContent>
           <TabsContent value="add-product">
             <AddProductForm />

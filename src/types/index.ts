@@ -39,3 +39,23 @@ export type Order = {
     name: string;
   } | null;
 }
+
+export type CustomOrder = {
+  id: number;
+  created_at: string;
+  customer_name: string;
+  customer_phone: string;
+  secondary_phone?: string;
+  customer_email: string;
+  customer_address: string;
+  size: string;
+  quantity: number;
+  total_price: number;
+  delivery_charge: number;
+  payment_method: string;
+  delivery_location: 'dhaka' | 'outside';
+  transaction_id?: string;
+  front_design_url: string;
+  back_design_url?: string;
+  status: 'pending_review' | 'approved' | 'rejected' | 'in_production' | 'shipped';
+}
