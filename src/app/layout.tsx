@@ -1,6 +1,5 @@
 import type {Metadata} from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
 import { PT_Sans, Belleza, Alegreya } from 'next/font/google'
 
 const ptSans = PT_Sans({
@@ -35,7 +34,6 @@ export default function RootLayout({
     <html lang="en" className={`${ptSans.variable} ${belleza.variable} ${alegreya.variable}`}>
       <body className="font-sans">
         {children}
-        <Toaster />
       </body>
     </html>
   );

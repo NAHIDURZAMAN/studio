@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase"
 import { Skeleton } from "@/components/ui/skeleton"
 import PaginationControls from "@/components/pagination-controls"
 import { Suspense } from "react"
+import { Toaster } from "@/components/ui/toaster"
 
 const priceRanges = {
   'under-1000': (price: number) => price < 1000,
@@ -205,6 +206,7 @@ function HomePageContent() {
           }
         }}
       />
+      <Toaster />
     </div>
   );
 }
