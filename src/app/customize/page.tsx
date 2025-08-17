@@ -344,30 +344,30 @@ export default function CustomizePage() {
                       render={({ field }) => (
                         <FormItem className="space-y-3">
                           <FormLabel>Payment Method</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="grid grid-cols-2 gap-4"
-                            >
-                              <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="cod" id="cod" />
-                                </FormControl>
-                                <Label htmlFor="cod" className="font-normal">
-                                  Cash on Delivery
-                                </Label>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="prepaid" id="prepaid" />
-                                </FormControl>
-                                <Label htmlFor="prepaid" className="font-normal">
-                                  Pre-paid (bKash/Nagad/etc.)
-                                </Label>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
+                            <FormControl>
+                                <RadioGroup
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                className="grid grid-cols-2 gap-4"
+                                >
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                        <FormControl>
+                                            <RadioGroupItem value="cod" id="cod" />
+                                        </FormControl>
+                                        <Label htmlFor="cod" className="font-normal">
+                                        Cash on Delivery
+                                        </Label>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                        <FormControl>
+                                            <RadioGroupItem value="prepaid" id="prepaid" />
+                                        </FormControl>
+                                        <Label htmlFor="prepaid" className="font-normal">
+                                        Pre-paid (bKash/Nagad/etc.)
+                                        </Label>
+                                    </FormItem>
+                                </RadioGroup>
+                            </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -460,5 +460,3 @@ export default function CustomizePage() {
     </div>
   )
 }
-
-    
