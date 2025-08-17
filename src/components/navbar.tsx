@@ -66,7 +66,7 @@ export default function Navbar() {
             alt="X Style Logo"
             width={40}
             height={40}
-            className="h-10 w-auto"
+            className="h-10 w-auto rounded-full"
             data-ai-hint="logo"
           />
           <span className="font-headline text-2xl font-bold text-primary">
