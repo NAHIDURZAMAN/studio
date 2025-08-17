@@ -54,7 +54,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/admin/login');
+    router.push('/');
   };
 
   return (
@@ -83,6 +83,7 @@ export default function Navbar() {
           <Button variant="ghost" asChild>
             <Link href="#">Contact</Link>
           </Button>
+          {/*
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -94,7 +95,15 @@ export default function Navbar() {
               <DropdownMenuSeparator />
               {user ? (
                 <>
-                  {isAdmin && <DropdownMenuItem asChild><Link href="/admin">My Orders</Link></DropdownMenuItem>}
+                  {isAdmin ? (
+                     <DropdownMenuItem asChild>
+                      <Link href="/admin">Admin Panel</Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem asChild>
+                      <Link href="/my-orders">My Orders</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
@@ -102,12 +111,17 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <DropdownMenuItem asChild><Link href="/admin/login">Login</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link href="/signup">Sign Up</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/login">Login</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/signup">Sign Up</Link>
+                  </DropdownMenuItem>
                 </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          */}
         </nav>
         <div className="md:hidden">
           <Sheet>
@@ -121,10 +135,15 @@ export default function Navbar() {
                     <Link href="#" className="text-lg font-medium">New Arrivals</Link>
                     <Link href="#" className="text-lg font-medium">Collections</Link>
                     <Link href="#" className="text-lg font-medium">Contact</Link>
+                    {/*
                     <Separator />
                      {user ? (
                       <>
-                        {isAdmin && <Link href="/admin" className="text-lg font-medium">My Orders</Link>}
+                        {isAdmin ? (
+                          <Link href="/admin" className="text-lg font-medium">Admin Panel</Link>
+                        ) : (
+                           <Link href="/my-orders" className="text-lg font-medium">My Orders</Link>
+                        )}
                         <Button variant="ghost" onClick={handleLogout} className="justify-start p-0 h-auto text-lg font-medium">
                            <LogOut className="mr-2 h-5 w-5" />
                            Logout
@@ -132,10 +151,11 @@ export default function Navbar() {
                       </>
                     ) : (
                       <>
-                        <Link href="/admin/login" className="text-lg font-medium">Login</Link>
+                        <Link href="/login" className="text-lg font-medium">Login</Link>
                         <Link href="/signup" className="text-lg font-medium">Sign Up</Link>
                       </>
                     )}
+                    */}
                 </div>
             </SheetContent>
           </Sheet>
