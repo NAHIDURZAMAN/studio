@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Separator } from './ui/separator';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -112,7 +112,7 @@ export default function Navbar() {
               ) : (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/login">Login</Link>
+                    <Link href="/admin/login">Login</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/signup">Sign Up</Link>
@@ -131,6 +131,9 @@ export default function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle className="font-headline text-2xl">Menu</SheetTitle>
+              </SheetHeader>
                 <div className="flex flex-col gap-4 p-4">
                     <Link href="#" className="text-lg font-medium">New Arrivals</Link>
                     <Link href="#" className="text-lg font-medium">Collections</Link>
@@ -151,7 +154,7 @@ export default function Navbar() {
                       </>
                     ) : (
                       <>
-                        <Link href="/login" className="text-lg font-medium">Login</Link>
+                        <Link href="/admin/login" className="text-lg font-medium">Login</Link>
                         <Link href="/signup" className="text-lg font-medium">Sign Up</Link>
                       </>
                     )}
