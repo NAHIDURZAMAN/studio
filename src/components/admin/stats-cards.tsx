@@ -68,7 +68,7 @@ export default function StatsCards() {
           <ShoppingCart className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.totalOrders}</div>
+          <div className="text-lg font-bold">{stats.totalOrders}</div>
           <p className="text-xs text-muted-foreground">Total orders placed</p>
         </CardContent>
       </Card>
@@ -78,7 +78,7 @@ export default function StatsCards() {
           <Package className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.processing}</div>
+          <div className="text-lg font-bold">{stats.processing}</div>
            <p className="text-xs text-muted-foreground">Orders awaiting delivery or cancellation</p>
         </CardContent>
       </Card>
@@ -88,7 +88,7 @@ export default function StatsCards() {
           <Send className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.delivered}</div>
+          <div className="text-lg font-bold">{stats.delivered}</div>
            <p className="text-xs text-muted-foreground">Successfully delivered orders</p>
         </CardContent>
       </Card>
