@@ -13,7 +13,6 @@ import { supabase } from "@/lib/supabase"
 import { Skeleton } from "@/components/ui/skeleton"
 import PaginationControls from "@/components/pagination-controls"
 import { Suspense } from "react"
-import { Toaster } from "@/components/ui/toaster"
 
 const priceRanges = {
   'under-1000': (price: number) => price < 1000,
@@ -134,10 +133,10 @@ function HomePageContent() {
            <div className="text-center mb-12">
              {isClient ? (
                 <>
-                    <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-foreground">
+                    <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-foreground">
                         {isNewArrivals ? "New Arrivals" : "Your Style, Your Way."}
                     </h1>
-                    <p className="mt-4 text-lg font-alegreya text-muted-foreground max-w-2xl mx-auto">
+                    <p className="font-alegreya mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
                         {isNewArrivals
                             ? "Check out the latest styles added in the last 30 days."
                             : "From the streets of Mirpur to every corner of Bangladesh, X Style delivers the freshest urban fashion."
@@ -206,7 +205,6 @@ function HomePageContent() {
           }
         }}
       />
-      <Toaster />
     </div>
   );
 }
