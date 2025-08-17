@@ -78,9 +78,6 @@ export default function Navbar() {
             <Link href="/?new_arrivals=true">New Arrivals</Link>
           </Button>
           <Button variant="ghost" asChild>
-            <Link href="/customize">Customize</Link>
-          </Button>
-          <Button variant="ghost" asChild>
             <Link href="#">Collections</Link>
           </Button>
           <Button variant="ghost" asChild>
@@ -139,7 +136,6 @@ export default function Navbar() {
               </SheetHeader>
                 <div className="flex flex-col gap-4 p-4">
                     <Link href="/?new_arrivals=true" className="text-lg font-medium">New Arrivals</Link>
-                    <Link href="/customize" className="text-lg font-medium">Customize</Link>
                     <Link href="#" className="text-lg font-medium">Collections</Link>
                     <Link href="#" className="text-lg font-medium">Contact</Link>
                     {/*

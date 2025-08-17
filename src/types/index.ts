@@ -40,16 +40,3 @@ export type Order = {
     name: string;
   } | null;
 }
-
-export type CustomOrder = {
-  id: number;
-  created_at: string;
-  customer_name: string;
-  customer_phone: string;
-  customer_address: string;
-  designs: {
-    design_url: string;
-    instructions: string;
-  }[];
-  status: 'pending_review' | 'approved' | 'rejected' | 'in_production' | 'shipped';
-}
