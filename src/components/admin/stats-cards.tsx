@@ -52,44 +52,44 @@ export default function StatsCards() {
 
   if (loading) {
     return (
-        <div className="grid gap-6 md:grid-cols-3">
-            <Skeleton className="h-36 w-full" />
-            <Skeleton className="h-36 w-full" />
-            <Skeleton className="h-36 w-full" />
+        <div className="grid gap-4 md:grid-cols-3">
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
         </div>
     )
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-3">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-medium">Total Orders</CardTitle>
-          <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold">{stats.totalOrders}</div>
-          <p className="text-sm text-muted-foreground">Total orders placed</p>
+          <div className="text-2xl font-bold">{stats.totalOrders}</div>
+          <p className="text-xs text-muted-foreground">Total orders placed</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-medium">Order Processing</CardTitle>
-          <Package className="h-5 w-5 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Order Processing</CardTitle>
+          <Package className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold">{stats.processing}</div>
-           <p className="text-sm text-muted-foreground">Orders awaiting delivery or cancellation</p>
+          <div className="text-2xl font-bold">{stats.processing}</div>
+           <p className="text-xs text-muted-foreground">Orders awaiting delivery or cancellation</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-medium">Delivered</CardTitle>
-          <Send className="h-5 w-5 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+          <Send className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold">{stats.delivered}</div>
-           <p className="text-sm text-muted-foreground">Successfully delivered orders</p>
+          <div className="text-2xl font-bold">{stats.delivered}</div>
+           <p className="text-xs text-muted-foreground">Successfully delivered orders</p>
         </CardContent>
       </Card>
     </div>
