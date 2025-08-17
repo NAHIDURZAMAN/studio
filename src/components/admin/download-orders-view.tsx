@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from '@/lib/supabase';
 import type { Order } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { DownloadCloud, Package, PackageCheck, Send, Ban, CheckCircle } from 'lucide-react';
+import { DownloadCloud, Package, PackageCheck, Send, Ban, CheckCircle, DollarSign, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { Separator } from '../ui/separator';
+import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 const orderStatuses: { status: Order['order_status']; icon: React.ElementType; label: string }[] = [
     { status: 'pending', icon: Package, label: 'Pending Orders' },
@@ -19,6 +21,8 @@ const orderStatuses: { status: Order['order_status']; icon: React.ElementType; l
 
 export default function DownloadOrdersView() {
   const [loadingStatus, setLoadingStatus] = React.useState<string | null>(null);
+  const [totalRevenue, setTotalRevenue] = React.useState<number | null>(null);
+  const [isCalculating, setIsCalculating] = React.useState(false);
   const { toast } = useToast();
 
   const handleDownload = async (status?: Order['order_status']) => {
@@ -116,7 +120,49 @@ export default function DownloadOrdersView() {
     }
   };
 
+   const handleCalculateRevenue = async () => {
+    setIsCalculating(true);
+    setTotalRevenue(null);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('total_price')
+        .eq('order_status', 'delivered');
+
+      if (error) {
+        throw new Error(`Failed to fetch orders for revenue calculation: ${error.message}`);
+      }
+
+      if (!data || data.length === 0) {
+        toast({
+            title: "No Delivered Orders",
+            description: "There are no delivered orders to calculate revenue from.",
+        });
+        setTotalRevenue(0);
+        return;
+      }
+
+      const revenue = data.reduce((acc, order) => acc + order.total_price, 0);
+      setTotalRevenue(revenue);
+       toast({
+        title: "Revenue Calculated",
+        description: "Total revenue from delivered orders is now displayed.",
+      });
+
+    } catch (error: any) {
+      console.error("Error calculating revenue:", error);
+      toast({
+        variant: "destructive",
+        title: "Calculation Failed",
+        description: error.message || "An unexpected error occurred.",
+      });
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
   return (
+    <div className='space-y-6'>
     <Card>
       <CardHeader>
         <CardTitle>Download Order History</CardTitle>
@@ -139,5 +185,35 @@ export default function DownloadOrdersView() {
         </div>
       </CardContent>
     </Card>
+
+     <Card>
+      <CardHeader>
+        <CardTitle>Revenue Calculation</CardTitle>
+        <CardDescription>
+          Calculate the total revenue from all delivered orders.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Button onClick={handleCalculateRevenue} disabled={isCalculating}>
+          {isCalculating ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <DollarSign className="mr-2 h-4 w-4" />
+          )}
+          {isCalculating ? 'Calculating...' : 'Calculate Total Revenue'}
+        </Button>
+
+        {totalRevenue !== null && (
+          <Alert>
+            <DollarSign className="h-4 w-4" />
+            <AlertTitle>Total Revenue</AlertTitle>
+            <AlertDescription className="text-2xl font-bold text-primary">
+              ৳{totalRevenue.toLocaleString()}
+            </AlertDescription>
+          </Alert>
+        )}
+      </CardContent>
+    </Card>
+    </div>
   );
 }
