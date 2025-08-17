@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -349,18 +350,22 @@ export default function CustomizePage() {
                               defaultValue={field.value}
                               className="grid grid-cols-2 gap-4"
                             >
-                              <div className="flex items-center space-x-3 space-y-0">
-                                <RadioGroupItem value="cod" id="cod" />
+                              <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value="cod" id="cod" />
+                                </FormControl>
                                 <Label htmlFor="cod" className="font-normal">
                                   Cash on Delivery
                                 </Label>
-                              </div>
-                              <div className="flex items-center space-x-3 space-y-0">
-                                <RadioGroupItem value="prepaid" id="prepaid" />
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value="prepaid" id="prepaid" />
+                                </FormControl>
                                 <Label htmlFor="prepaid" className="font-normal">
                                   Pre-paid (bKash/Nagad/etc.)
                                 </Label>
-                              </div>
+                              </FormItem>
                             </RadioGroup>
                           </FormControl>
                           <FormMessage />
