@@ -4,6 +4,8 @@ export type Product = {
   name: string;
   category: 'Drop Shoulder Tees' | 'Jerseys' | 'Hoodies' | 'Basic Collection';
   price: number;
+  discount_percentage?: number;
+  discount_price?: number;
   color: 'Black' | 'White' | 'Navy' | 'Grey' | 'Other';
   images: string[];
   stock: number;
@@ -39,4 +41,18 @@ export type Order = {
   products: { // This comes from the join query
     name: string;
   } | null;
+}
+
+export type Message = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  status: 'unread' | 'read' | 'replied';
+  created_at: string;
+  updated_at: string;
+  admin_notes?: string;
 }

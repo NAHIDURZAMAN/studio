@@ -1,0 +1,10 @@
+// TypeScript configuration to suppress Next.js 15 serialization warnings
+// Add this to your next.config.ts if the warnings become annoying
+
+const nextConfig = {
+  experimental: {
+    // Suppress function prop warnings in development
+    typedRoutes: false,
+  },
+  // Your existing config...
+};

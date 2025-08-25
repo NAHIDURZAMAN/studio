@@ -16,6 +16,25 @@ type ProductCardProps = {
 export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
   const isLimitedStock = product.stock > 0 && product.stock < 10;
   const isOutOfStock = product.stock === 0;
+  
+  // Better discount logic with fallback calculations
+  const discountPercentage = product.discount_percentage || 0;
+  const hasDiscount = discountPercentage > 0;
+  
+  // Calculate discount price if not provided
+  const calculateDiscountPrice = () => {
+    if (!hasDiscount) return product.price;
+    
+    // Use stored discount_price if available, otherwise calculate
+    if (product.discount_price && product.discount_price > 0) {
+      return product.discount_price;
+    }
+    
+    // Fallback calculation
+    return product.price - (product.price * discountPercentage / 100);
+  };
+  
+  const displayPrice = calculateDiscountPrice();
 
   return (
     <Card className="flex flex-col overflow-hidden h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
@@ -37,6 +56,15 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
             ))}
           </CarouselContent>
         </Carousel>
+        
+        {/* Discount Badge */}
+        {hasDiscount && (
+          <Badge className="absolute top-3 left-3 z-10 bg-red-500 text-white font-bold">
+            -{discountPercentage.toFixed(0)}%
+          </Badge>
+        )}
+        
+        {/* Stock Badge */}
         {(isLimitedStock || isOutOfStock) && (
              <Badge variant={isOutOfStock ? "destructive" : "secondary"} className="absolute top-3 right-3 z-10">
                 {isOutOfStock ? "Out of Stock" : `Only ${product.stock} left!`}
@@ -48,7 +76,16 @@ export default function ProductCard({ product, onBuyNow }: ProductCardProps) {
         <p className="font-alegreya text-xs md:text-sm text-muted-foreground">{product.category}</p>
       </CardContent>
       <CardFooter className="p-3 md:p-4 pt-0 flex justify-between items-center">
-        <p className="text-lg md:text-xl font-bold text-primary">৳{product.price.toLocaleString()}</p>
+        <div className="flex flex-col">
+          {hasDiscount ? (
+            <>
+              <p className="text-lg md:text-xl font-bold text-green-600">৳{Math.round(displayPrice).toLocaleString()}</p>
+              <p className="text-xs md:text-sm text-muted-foreground line-through">৳{product.price.toLocaleString()}</p>
+            </>
+          ) : (
+            <p className="text-lg md:text-xl font-bold text-primary">৳{product.price.toLocaleString()}</p>
+          )}
+        </div>
         <Button onClick={() => onBuyNow(product)} disabled={isOutOfStock} className="h-9 px-3 text-xs md:h-10 md:px-4 md:text-sm">
             <ShoppingCart className="mr-1 md:mr-2 h-4 w-4" />
             Buy Now

@@ -3,6 +3,7 @@
 import AdminAuthGuard from "@/components/admin/admin-auth-guard"
 import AddProductForm from "@/components/admin/add-product-form"
 import DownloadOrdersView from "@/components/admin/download-orders-view"
+import MessagesView from "@/components/admin/messages-view"
 import OrdersView from "@/components/admin/orders-view"
 import ProductsView from "@/components/admin/products-view"
 import StatsCards from "@/components/admin/stats-cards"
@@ -19,14 +20,18 @@ export default function AdminPage() {
         <StatsCards />
 
         <Tabs defaultValue="orders" className="mt-8">
-          <TabsList className="grid w-full max-w-lg grid-cols-2 md:grid-cols-4 h-auto">
-            <TabsTrigger value="orders">View Orders</TabsTrigger>
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 md:grid-cols-5 h-auto">
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="add-product">Add Product</TabsTrigger>
-            <TabsTrigger value="view-products">View Products</TabsTrigger>
-            <TabsTrigger value="order-history">Order History</TabsTrigger>
+            <TabsTrigger value="view-products">Products</TabsTrigger>
+            <TabsTrigger value="order-history">History</TabsTrigger>
           </TabsList>
           <TabsContent value="orders">
             <OrdersView />
+          </TabsContent>
+          <TabsContent value="messages">
+            <MessagesView />
           </TabsContent>
           <TabsContent value="add-product">
             <AddProductForm />

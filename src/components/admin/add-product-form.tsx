@@ -30,6 +30,7 @@ const productSchema = z.object({
   name: z.string().min(2, "Product name is required."),
   description: z.string().min(10, "Description must be at least 10 characters."),
   price: z.coerce.number().min(1, "Price must be a positive number."),
+  discount_percentage: z.coerce.number().min(0).max(100, "Discount must be between 0-100%").optional(),
   category: z.enum(['Drop Shoulder Tees', 'Jerseys', 'Hoodies', 'Basic Collection'], {
     required_error: "Please select a category.",
   }),
@@ -53,6 +54,7 @@ export default function AddProductForm() {
       name: "",
       description: "",
       price: 0,
+      discount_percentage: 0,
       stock: 0,
       images: undefined,
       sizes: [],
@@ -86,10 +88,23 @@ export default function AddProductForm() {
         imageUrls.push(publicUrlData.publicUrl);
       }
 
+      const discountPrice = values.discount_percentage && values.discount_percentage > 0 
+        ? values.price - (values.price * values.discount_percentage / 100)
+        : null;
+
       const productData = {
         ...values,
         images: imageUrls,
+        discount_price: discountPrice,
       };
+
+      // Debug: Log what we're sending to database
+      console.log("Sending to database:", {
+        name: productData.name,
+        price: productData.price,
+        discount_percentage: productData.discount_percentage,
+        discount_price: productData.discount_price
+      });
 
       const { error: insertError } = await supabase.from('products').insert([productData]).select();
 
@@ -98,10 +113,30 @@ export default function AddProductForm() {
       }
 
       toast({
-        title: "🎉 Product Added!",
-        description: `"${values.name}" has been added to your store.`,
+        title: "🎉 Product Added Successfully!",
+        description: `"${values.name}" has been added to your store. Refreshing page...`,
       })
-      form.reset()
+      
+      // Reset form completely
+      form.reset({
+        name: "",
+        description: "",
+        price: 0,
+        discount_percentage: 0,
+        stock: 0,
+        category: undefined,
+        color: undefined,
+        images: undefined,
+        sizes: [],
+        data_ai_hint: ""
+      })
+      
+      // Auto refresh the page after showing success message
+      setTimeout(() => {
+        // This will refresh the entire admin page, updating both
+        // the "View Products" tab and showing the new product
+        window.location.reload()
+      }, 800)
     } catch (error: any) {
         console.error("Error submitting form:", error)
         toast({
@@ -151,7 +186,7 @@ export default function AddProductForm() {
                     </FormControl>
                     {selectedFiles && selectedFiles.length > 0 && (
                         <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-                            {Array.from(selectedFiles).map((file: File, index) => (
+                            {Array.from(selectedFiles as FileList).map((file, index) => (
                                 <div key={index} className="relative group">
                                     <Image
                                         src={URL.createObjectURL(file)}
@@ -164,7 +199,7 @@ export default function AddProductForm() {
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            const newFiles = Array.from(selectedFiles).filter((_, i) => i !== index);
+                                            const newFiles = Array.from(selectedFiles as FileList).filter((_, i) => i !== index);
                                             const dataTransfer = new DataTransfer();
                                             newFiles.forEach(file => dataTransfer.items.add(file));
                                             onChange(dataTransfer.files.length > 0 ? dataTransfer.files : null);
@@ -234,6 +269,102 @@ export default function AddProductForm() {
                     </FormItem>
                 )}
                 />
+            </div>
+            
+            {/* Discount Section */}
+            <div className="space-y-4">
+              <label className="text-sm font-medium">Discount Options</label>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                control={form.control}
+                name="discount_percentage"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Discount Percentage (%)</FormLabel>
+                    <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="e.g., 20" 
+                          min="0" 
+                          max="100" 
+                          step="0.1"
+                          {...field} 
+                          onChange={(e) => {
+                            const percentage = parseFloat(e.target.value) || 0;
+                            const price = form.getValues("price") || 0;
+                            field.onChange(percentage);
+                            
+                            // Auto-update form values
+                            if (percentage > 0 && price > 0) {
+                              const discountPrice = price - (price * percentage / 100);
+                              // Note: We don't have a direct discount_price field in the form
+                              // but we can calculate it in the preview
+                            }
+                          }}
+                        />
+                    </FormControl>
+                    <FormDescription>
+                      Enter percentage (0-100) or leave empty for no discount
+                    </FormDescription>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <div className="space-y-2">
+                  <FormLabel>Discount Price (৳)</FormLabel>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 760"
+                    onChange={(e) => {
+                      const discountPrice = parseFloat(e.target.value) || 0;
+                      const price = form.getValues("price") || 0;
+                      
+                      if (discountPrice > 0 && discountPrice < price) {
+                        const percentage = ((price - discountPrice) / price) * 100;
+                        form.setValue("discount_percentage", percentage);
+                      } else if (discountPrice === 0 || e.target.value === '') {
+                        form.setValue("discount_percentage", 0);
+                      }
+                    }}
+                  />
+                  <FormDescription>
+                    Set final price directly (will auto-calculate percentage)
+                  </FormDescription>
+                </div>
+              </div>
+              
+              {/* Price Preview */}
+              <div className="bg-muted p-4 rounded-md">
+                <div className="text-sm font-medium mb-3">Price Preview:</div>
+                {(() => {
+                  const price = form.watch("price") || 0;
+                  const discount = form.watch("discount_percentage") || 0;
+                  const discountedPrice = discount > 0 ? price - (price * discount / 100) : price;
+                  
+                  if (discount > 0) {
+                    return (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="line-through text-red-500 text-lg">৳{price}</span>
+                          <span className="text-green-600 font-bold text-xl">৳{discountedPrice.toFixed(0)}</span>
+                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
+                            -{discount.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Customer saves: <span className="font-semibold text-green-600">৳{(price * discount / 100).toFixed(0)}</span>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="text-lg font-semibold">৳{price} <span className="text-sm text-muted-foreground">(No discount)</span></div>
+                    );
+                  }
+                })()}
+              </div>
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField

@@ -7,8 +7,12 @@ import Navbar from "@/components/navbar"
 import ProductFilters from "@/components/product-filters"
 import ProductCard from "@/components/product-card"
 import CheckoutSheet from "@/components/checkout-sheet"
+import CartDrawer from "@/components/cart-drawer"
+import SizeSelectionDialog from "@/components/size-selection-dialog"
+import MultiCheckoutForm from "@/components/multi-checkout-form"
 import Footer from "@/components/footer"
 import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase"
 import { Skeleton } from "@/components/ui/skeleton"
 import PaginationControls from "@/components/pagination-controls"
@@ -16,9 +20,12 @@ import { Suspense } from "react"
 import { Toaster } from "@/components/ui/toaster"
 
 const priceRanges = {
+  'under-500': (price: number) => price < 500,
+  '500-1000': (price: number) => price >= 500 && price <= 1000,
   'under-1000': (price: number) => price < 1000,
   '1000-2000': (price: number) => price >= 1000 && price <= 2000,
-  'premium': (price: number) => price > 2000,
+  '2000-3000': (price: number) => price >= 2000 && price <= 3000,
+  'premium': (price: number) => price > 3000,
   'all': () => true,
 };
 
@@ -43,6 +50,12 @@ function HomePageContent() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [totalProducts, setTotalProducts] = React.useState(0);
+
+  // Cart states
+  const [showCart, setShowCart] = React.useState(false);
+  const [showSizeDialog, setShowSizeDialog] = React.useState(false);
+  const [productForSizeSelection, setProductForSizeSelection] = React.useState<Product | null>(null);
+  const [showMultiCheckout, setShowMultiCheckout] = React.useState(false);
 
   const isNewArrivals = searchParams.get('new_arrivals') === 'true';
 
@@ -121,14 +134,25 @@ function HomePageContent() {
   };
 
   const handleBuyNow = (product: Product) => {
-    setSelectedProduct(product);
+    // Show size selection dialog for new cart system
+    setProductForSizeSelection(product);
+    setShowSizeDialog(true);
+  };
+
+  const handleCartCheckout = () => {
+    setShowCart(false);
+    setShowMultiCheckout(true);
+  };
+
+  const handleCheckoutSuccess = () => {
+    setShowMultiCheckout(false);
   };
   
   const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Navbar />
+      <Navbar onCartClickAction={() => setShowCart(true)} />
       <main className="flex-grow pt-16">
         <div className="container mx-auto px-4 py-8">
            <div className="text-center mb-12">
@@ -161,6 +185,27 @@ function HomePageContent() {
           />
 
           <section className="mt-8">
+            {/* Results Summary */}
+            {!loading && (
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {products.length} of {totalProducts} products
+                    {searchTerm && (
+                      <span className="ml-1">
+                        for "<span className="font-medium text-foreground">{searchTerm}</span>"
+                      </span>
+                    )}
+                  </p>
+                </div>
+                {totalPages > 1 && (
+                  <p className="text-xs text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                )}
+              </div>
+            )}
+
             {loading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -175,8 +220,22 @@ function HomePageContent() {
                   ))}
                 </div>
                 {products.length === 0 && (
-                   <div className="col-span-full text-center py-16">
-                      <p className="text-muted-foreground text-lg">No products match your search or filters. Try different options!</p>
+                   <div className="col-span-full text-center py-16 space-y-4">
+                      <div className="text-6xl">🔍</div>
+                      <h3 className="text-xl font-semibold">No products found</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        No products match your current search and filters. Try adjusting your search terms or clearing some filters.
+                      </p>
+                      <Button 
+                        onClick={() => {
+                          handleFilterChange({ categories: [], colors: [], priceRange: 'all' });
+                          handleSearchChange("");
+                        }}
+                        variant="outline"
+                        className="mt-4"
+                      >
+                        Clear All Filters
+                      </Button>
                    </div>
                 )}
               </>
@@ -206,6 +265,46 @@ function HomePageContent() {
           }
         }}
       />
+
+      {/* Size Selection Dialog */}
+      <SizeSelectionDialog
+        product={productForSizeSelection}
+        isOpen={showSizeDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setProductForSizeSelection(null);
+          }
+          setShowSizeDialog(open);
+        }}
+      />
+
+      {/* Cart Drawer */}
+      <CartDrawer
+        isOpen={showCart}
+        onOpenChange={setShowCart}
+        onCheckout={handleCartCheckout}
+      />
+
+      {/* Multi-Product Checkout */}
+      {showMultiCheckout && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="container max-w-2xl mx-auto py-8 px-4">
+            <div className="bg-background border rounded-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold">Checkout</h1>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setShowMultiCheckout(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              <MultiCheckoutForm onSuccess={handleCheckoutSuccess} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <Toaster />
     </div>
   );

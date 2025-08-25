@@ -36,7 +36,7 @@ const checkoutSchema = z.object({
   address: z.string().min(10, "Full address is required."),
   size: z.string({ required_error: "Please select a size."}),
   paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'trust', 'brac'], { required_error: "Please select a payment method." }),
-  deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }).optional(),
+  deliveryLocation: z.enum(['dhaka', 'outside'], { required_error: "Please select delivery location." }),
   transactionId: z.string().optional(),
   paymentConfirmation: z.boolean(),
 }).refine(data => {
@@ -47,14 +47,6 @@ const checkoutSchema = z.object({
 }, {
   message: "A valid Transaction ID is required for this payment method.",
   path: ["transactionId"],
-}).refine(data => {
-    if (data.paymentMethod === 'cod' && !data.deliveryLocation) {
-        return false;
-    }
-    return true;
-}, {
-    message: "Please select a delivery location for Cash on Delivery.",
-    path: ["deliveryLocation"],
 }).refine(data => {
     if (!data.paymentConfirmation) {
         return false;
@@ -83,6 +75,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
       email: "",
       address: "",
       paymentMethod: 'cod',
+      deliveryLocation: 'dhaka',
       transactionId: "",
       secondary_phone: "",
       paymentConfirmation: false,
@@ -93,16 +86,20 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
   const deliveryLocation = form.watch("deliveryLocation");
   
   const deliveryCharge = deliveryLocation === 'dhaka' ? 70 : deliveryLocation === 'outside' ? 120 : 0;
-  const subtotal = product.price * quantity;
-  const total = subtotal + (paymentMethod === 'cod' ? deliveryCharge : 0);
+  
+  // Calculate effective price (use discount price if available, otherwise original price)
+  const effectivePrice = product.discount_price && product.discount_price > 0 
+    ? product.discount_price 
+    : product.price;
+  
+  const subtotal = effectivePrice * quantity;
+  const total = subtotal + deliveryCharge; // Always include delivery charges
   
   const handlePaymentMethodChange = (value: string) => {
     form.setValue("paymentMethod", value as any, { shouldValidate: true });
     form.setValue("paymentConfirmation", false); // Reset confirmation on change
     if (value === 'cod') {
         form.setValue("transactionId", "");
-    } else {
-        form.setValue("deliveryLocation", undefined);
     }
   }
 
@@ -131,7 +128,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
         product_id: product.id,
         quantity,
         total_price: total,
-        delivery_charge: paymentMethod === 'cod' ? deliveryCharge : 0,
+        delivery_charge: deliveryCharge, // Always include delivery charges
         customer_name: values.name,
         customer_phone: values.phone,
         secondary_phone: values.secondary_phone,
@@ -173,7 +170,16 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                     <span className="text-lg font-bold w-4 text-center">{quantity}</span>
                     <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setQuantity(q => q+1)}><Plus className="h-4 w-4" /></Button>
                 </div>
-                <p className="text-2xl font-bold font-headline text-primary">৳ {subtotal.toLocaleString()}</p>
+                <div className="text-right">
+                  {product.discount_price && product.discount_price > 0 && product.discount_price < product.price ? (
+                    <div className="flex flex-col items-end">
+                      <p className="text-sm text-muted-foreground line-through">৳ {(product.price * quantity).toLocaleString()}</p>
+                      <p className="text-2xl font-bold font-headline text-primary">৳ {subtotal.toLocaleString()}</p>
+                    </div>
+                  ) : (
+                    <p className="text-2xl font-bold font-headline text-primary">৳ {subtotal.toLocaleString()}</p>
+                  )}
+                </div>
             </div>
         </div>
         <Separator/>
@@ -331,25 +337,50 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                         />
                     </TabsContent>
                     <TabsContent value="mobile" className="mt-4">
+                        <FormField
+                            control={form.control}
+                            name="deliveryLocation"
+                            render={({ field: deliveryField }) => (
+                            <FormItem>
+                                <FormLabel>Delivery Location</FormLabel>
+                                <Select onValueChange={deliveryField.onChange} defaultValue={deliveryField.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Select where to deliver" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="dhaka">Inside Dhaka (৳70)</SelectItem>
+                                    <SelectItem value="outside">Outside Dhaka (৳120)</SelectItem>
+                                </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
                         <RadioGroup onValueChange={handlePaymentMethodChange} value={paymentMethod} className="grid grid-cols-1 gap-4">
                             <div className="bg-secondary p-4 rounded-md">
-                                <p className="text-sm text-secondary-foreground">Please send ৳{subtotal.toLocaleString()} to one of the following numbers and enter the Transaction ID below.</p>
+                                <p className="text-sm text-secondary-foreground">Please send ৳{total.toLocaleString()} to the following numbers and enter the Transaction ID below.</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                                    <p className="text-sm font-mono"><strong>bKash:</strong> 01677343504</p>
+                                    <p className="text-sm font-mono"><strong>Nagad:</strong> 01521753739</p>
+                                </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
                                     <FormControl>
                                         <RadioGroupItem value="bkash" id="bkash" />
                                     </FormControl>
-                                    <FormLabel htmlFor="bkash" className="font-normal w-full">
-                                        <Image src="/assets/bkash.svg" alt="bKash" width={60} height={20}/>
+                                    <FormLabel htmlFor="bkash" className="font-normal w-full flex items-center justify-start">
+                                        <Image src="/assets/bkash.png" alt="bKash" width={100} height={40} className="object-contain"/>
                                     </FormLabel>
                                 </FormItem>
                                     <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
                                     <FormControl>
                                         <RadioGroupItem value="nagad" id="nagad" />
                                     </FormControl>
-                                    <FormLabel htmlFor="nagad" className="font-normal w-full">
-                                        <Image src="/assets/nagad.svg" alt="Nagad" width={80} height={20}/>
+                                    <FormLabel htmlFor="nagad" className="font-normal w-full flex items-center justify-start">
+                                        <Image src="/assets/nagad.png" alt="Nagad" width={100} height={40} className="object-contain"/>
                                     </FormLabel>
                                 </FormItem>
                             </div>
@@ -358,7 +389,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                     name="transactionId"
                                     render={({ field: trxField }) => (
                                         <FormItem>
-                                        <FormLabel>Transaction ID</FormLabel>
+                                        <FormLabel>Transaction ID *</FormLabel>
                                         <FormControl>
                                             <Input placeholder="Enter your TrxID here" {...trxField} />
                                         </FormControl>
@@ -389,25 +420,50 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                         </RadioGroup>
                     </TabsContent>
                     <TabsContent value="card" className="mt-4">
+                        <FormField
+                            control={form.control}
+                            name="deliveryLocation"
+                            render={({ field: deliveryField }) => (
+                            <FormItem>
+                                <FormLabel>Delivery Location</FormLabel>
+                                <Select onValueChange={deliveryField.onChange} defaultValue={deliveryField.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Select where to deliver" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="dhaka">Inside Dhaka (৳70)</SelectItem>
+                                    <SelectItem value="outside">Outside Dhaka (৳120)</SelectItem>
+                                </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
                          <RadioGroup onValueChange={handlePaymentMethodChange} value={paymentMethod} className="grid grid-cols-1 gap-4">
                             <div className="bg-secondary p-4 rounded-md">
-                                <p className="text-sm text-secondary-foreground">Please send ৳{subtotal.toLocaleString()} to one of the following accounts and enter the Transaction ID below.</p>
+                                <p className="text-sm text-secondary-foreground">Please send ৳{total.toLocaleString()} to the following accounts and enter the Transaction ID below.</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                                    <p className="text-sm font-mono"><strong>Trust Bank:</strong> 4181171800860910</p>
+                                    <p className="text-sm font-mono"><strong>BRAC Bank:</strong> 4777920800299481</p>
+                                </div>
                             </div>
                            <div className="grid grid-cols-2 gap-4">
                                 <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
                                     <FormControl>
                                         <RadioGroupItem value="trust" id="trust" />
                                     </FormControl>
-                                    <FormLabel htmlFor="trust" className="font-normal w-full">
-                                       <Image src="/assets/trust.svg" alt="Trust Bank" width={80} height={20}/>
+                                    <FormLabel htmlFor="trust" className="font-normal w-full flex items-center justify-start">
+                                       <Image src="/assets/trust.png" alt="Trust Bank" width={100} height={40} className="object-contain"/>
                                     </FormLabel>
                                 </FormItem>
                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
                                     <FormControl>
                                         <RadioGroupItem value="brac" id="brac" />
                                     </FormControl>
-                                    <FormLabel htmlFor="brac" className="font-normal w-full">
-                                        <Image src="/assets/brac.svg" alt="BRAC Bank" width={80} height={20}/>
+                                    <FormLabel htmlFor="brac" className="font-normal w-full flex items-center justify-start">
+                                        <Image src="/assets/brac.png" alt="BRAC Bank" width={100} height={40} className="object-contain"/>
                                     </FormLabel>
                                 </FormItem>
                             </div>
@@ -416,7 +472,7 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                                 name="transactionId"
                                 render={({ field: trxField }) => (
                                     <FormItem>
-                                    <FormLabel>Transaction ID</FormLabel>
+                                    <FormLabel>Transaction ID *</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Enter your TrxID here" {...trxField} />
                                     </FormControl>
@@ -458,12 +514,10 @@ export default function CheckoutForm({ product, onSuccess }: CheckoutFormProps) 
                 <span>Subtotal</span>
                 <span>৳ {subtotal.toLocaleString()}</span>
             </div>
-            {paymentMethod === 'cod' && deliveryCharge > 0 && (
-                 <div className="flex justify-between text-sm">
-                    <span>Delivery Charge</span>
-                    <span>৳ {deliveryCharge.toLocaleString()}</span>
-                </div>
-            )}
+            <div className="flex justify-between text-sm">
+                <span>Delivery Charge</span>
+                <span>৳ {deliveryCharge.toLocaleString()}</span>
+            </div>
              <Separator/>
              <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>

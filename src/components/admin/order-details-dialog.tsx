@@ -13,7 +13,7 @@ import type { Order } from "@/types"
 import { Badge } from "../ui/badge"
 import { format } from "date-fns"
 import { Separator } from "../ui/separator"
-import { Download, Mail, MapPin, Package, Phone, User } from "lucide-react"
+import { Download, Mail, MapPin, Package, Phone, User, Eye, Edit, Save, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useState, useRef, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
@@ -21,6 +21,9 @@ import { useToast } from "@/hooks/use-toast"
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import InvoiceTemplate from "./invoice-template"
+import Image from "next/image"
+import { Input } from "../ui/input"
+import { Textarea } from "../ui/textarea"
 
 type OrderDetailsDialogProps = {
   order: Order | null
@@ -32,15 +35,30 @@ type OrderDetailsDialogProps = {
 export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStatusChange }: OrderDetailsDialogProps) {
   const [currentStatus, setCurrentStatus] = useState(order?.order_status);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [productDetails, setProductDetails] = useState<any>(null);
   const { toast } = useToast();
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (order) {
       setCurrentStatus(order.order_status);
+      
+      // Fetch product details with images
+      fetchProductDetails(order.product_id);
     }
   }, [order]);
 
+  const fetchProductDetails = async (productId: number) => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+    
+    if (!error && data) {
+      setProductDetails(data);
+    }
+  };
 
   if (!order) return null;
 
@@ -111,23 +129,21 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-            {/* Left Column */}
+            {/* Left Column - Customer Info (Read Only) */}
             <div className="space-y-4">
                 <h4 className="font-semibold text-lg">Customer Info</h4>
+
                 <div className="flex items-start gap-3">
                     <User className="w-4 h-4 mt-1 text-muted-foreground" />
                     <span>{order.customer_name}</span>
                 </div>
                 <div className="flex items-start gap-3">
+                    <Phone className="w-4 h-4 mt-1 text-muted-foreground" />
+                    <span>{order.customer_phone}</span>
+                </div>
+                <div className="flex items-start gap-3">
                     <Mail className="w-4 h-4 mt-1 text-muted-foreground" />
                     <span>{order.customer_email}</span>
-                </div>
-                 <div className="flex items-start gap-3">
-                    <Phone className="w-4 h-4 mt-1 text-muted-foreground" />
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">{order.customer_phone} <Badge variant="outline" className="text-xs">WhatsApp</Badge></div>
-                      {order.secondary_phone && <div className="flex items-center gap-2">{order.secondary_phone} <Badge variant="outline" className="text-xs">Secondary</Badge></div>}
-                    </div>
                 </div>
                 <div className="flex items-start gap-3">
                     <MapPin className="w-4 h-4 mt-1 text-muted-foreground" />
@@ -135,17 +151,55 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
                 </div>
             </div>
 
-             {/* Right Column */}
+             {/* Right Column - Product Info & Status */}
              <div className="space-y-4">
-                <h4 className="font-semibold text-lg">Order Summary</h4>
-                 <div className="flex justify-between items-center">
-                    <span>{order.products?.name || 'Product'} x {order.quantity}</span>
-                    <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{order.size}</Badge>
+                <h4 className="font-semibold text-lg">Product & Order Details</h4>
+                
+                {/* Product Images */}
+                {productDetails?.images && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium flex items-center gap-2">
+                            <Eye className="w-4 h-4" />
+                            Product Images
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {productDetails.images.slice(0, 4).map((image: string, index: number) => (
+                                <div key={index} className="aspect-square relative border rounded-lg overflow-hidden">
+                                    <Image
+                                        src={image}
+                                        alt={`Product image ${index + 1}`}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Order Details */}
+                <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                        <span>{order.products?.name || 'Product'}</span>
                         <span className="font-semibold">৳{order.total_price.toLocaleString()}</span>
                     </div>
-                 </div>
+                    
+                    <div className="flex items-center gap-4">
+                        <div>
+                            <label className="text-sm font-medium">Quantity</label>
+                            <Badge variant="secondary" className="ml-2">{order.quantity}</Badge>
+                        </div>
+                        
+                        <div>
+                            <label className="text-sm font-medium">Size</label>
+                            <Badge variant="secondary" className="ml-2">{order.size}</Badge>
+                        </div>
+                    </div>
+                </div>
+
                 <Separator />
+                
+                {/* Payment & Delivery Info */}
                 <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Payment Method</span>
@@ -166,24 +220,32 @@ export default function OrderDetailsDialog({ order, isOpen, onOpenChange, onStat
                            <span>৳{order.delivery_charge.toLocaleString()}</span>
                         </div>
                 </div>
+                
                 <Separator />
-                 <h4 className="font-semibold text-lg pt-2">Status</h4>
-                 <div className="flex items-center gap-4">
-                    <Select value={currentStatus} onValueChange={(val) => setCurrentStatus(val as Order['order_status'])}>
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Update status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                           {orderStatuses.map(status => (
-                             <SelectItem key={status} value={status} className="capitalize">{status}</SelectItem>
-                           ))}
-                        </SelectContent>
-                    </Select>
-                     <Button onClick={handleStatusUpdate} disabled={isUpdating || currentStatus === order.order_status}>
-                        {isUpdating ? "Saving..." : "Save"}
-                     </Button>
-                 </div>
-
+                
+                {/* Status Update */}
+                <div className="space-y-3">
+                    <h4 className="font-semibold">Order Status</h4>
+                    <div className="flex items-center gap-2">
+                        <Select value={currentStatus} onValueChange={(val) => setCurrentStatus(val as Order['order_status'])}>
+                            <SelectTrigger className="flex-1">
+                                <SelectValue placeholder="Update status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                               {orderStatuses.map(status => (
+                                 <SelectItem key={status} value={status} className="capitalize">{status}</SelectItem>
+                               ))}
+                            </SelectContent>
+                        </Select>
+                        <Button 
+                            onClick={handleStatusUpdate} 
+                            disabled={isUpdating || currentStatus === order.order_status}
+                            size="sm"
+                        >
+                            {isUpdating ? "Saving..." : "Update"}
+                        </Button>
+                    </div>
+                </div>
              </div>
         </div>
 

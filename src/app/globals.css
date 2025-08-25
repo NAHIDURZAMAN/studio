@@ -95,4 +95,131 @@
   .animate-marquee {
     animation: marquee 30s linear infinite;
   }
+
+  /* Custom cart animations */
+  @keyframes cartBounce {
+    0%, 20%, 60%, 100% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.15);
+    }
+    80% {
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes sparkle {
+    0% {
+      transform: scale(0) rotate(0deg);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1) rotate(180deg);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(0) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes badgePulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+  }
+
+  @keyframes sparkleMove {
+    0% {
+      opacity: 0;
+      transform: translateY(0) scale(0);
+    }
+    20% {
+      opacity: 1;
+      transform: translateY(-10px) scale(1);
+    }
+    80% {
+      opacity: 0.8;
+      transform: translateY(-20px) scale(0.8);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-30px) scale(0);
+    }
+  }
+
+  @keyframes arrowDraw {
+    0% {
+      width: 0;
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes arrowHeadPop {
+    0% {
+      opacity: 0;
+      transform: rotate(var(--arrow-rotation, 0deg)) scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: rotate(var(--arrow-rotation, 0deg)) scale(1);
+    }
+  }
+
+  /* Flying cart animation */
+  @keyframes flyToCart {
+    0% {
+      transform: translate(0, 0) scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    20% {
+      transform: scale(1.2) rotate(5deg);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(0.8) rotate(-10deg);
+      opacity: 0.8;
+    }
+    80% {
+      transform: scale(0.5) rotate(15deg);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(0.2) rotate(0deg);
+      opacity: 0;
+    }
+  }
+
+  /* Apply flying animation to cart icon */
+  .flying-cart-icon {
+    animation: flyToCart 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .animate-cart-bounce {
+    animation: cartBounce 0.6s ease-in-out;
+  }
+  
+  .animate-sparkle {
+    animation: sparkle 0.6s ease-out;
+  }
+  
+  .animate-badge-pulse {
+    animation: badgePulse 0.6s ease-in-out;
+  }
 }
